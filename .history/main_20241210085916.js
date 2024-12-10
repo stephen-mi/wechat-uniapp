@@ -9,7 +9,7 @@ Vue.config.productionTip = false
 Vue.prototype.$store = store
 
 App.mpType = 'app'
-console.log(1)
+
 const app = new Vue({
   ...App
 })
