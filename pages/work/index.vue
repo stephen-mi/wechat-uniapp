@@ -80,15 +80,11 @@
       return {
         current: 0,
         swiperDotIndex: 0,
-        data: [{
-            image: '/static/images/banner/banner01.jpg'
-          },
-          {
-            image: '/static/images/banner/banner02.jpg'
-          },
-          {
-            image: '/static/images/banner/banner03.jpg'
-          }
+        data: [
+			{ image: 'https://fastly.jsdelivr.net/npm/@vant/assets/leaf.jpeg' },
+			{ image: 'https://fastly.jsdelivr.net/npm/@vant/assets/leaf.jpeg' },
+			{ image: 'https://fastly.jsdelivr.net/npm/@vant/assets/leaf.jpeg' },
+			
         ]
       }
     },
