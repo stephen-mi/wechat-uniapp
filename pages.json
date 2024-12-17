@@ -79,6 +79,11 @@
 		"style": {
 			"navigationBarTitleText": "相册列表"
 		}
+	}, {
+		"path": "pages/common/photoAnnotation/index",
+		"style": {
+			"navigationBarTitleText": "照片标注"
+		}
 	}],
 	// "tabBar": {
 	// 	"color": "#000000",

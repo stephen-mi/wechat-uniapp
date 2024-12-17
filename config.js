@@ -1,7 +1,7 @@
 // 应用全局配置
 module.exports = {
 	// baseUrl: 'http://5cumgr.natappfree.cc:48080',
-	baseUrl: 'http://www.heimi.site/', // http://www.heimi.site/
+	baseUrl: 'https://www.heimi.site/', // http://www.heimi.site/
 	baseApi: 'gz-api/v1/admin-api',
 	// 应用信息
 	appInfo: {

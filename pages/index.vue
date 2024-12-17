@@ -10,11 +10,12 @@
 		<view class="image-recording-content">
 			<view class="image-list">
 				<view class="first-image-wrap">
-					<image v-if="fileList.length > 0" class="first-image" :src="fileList[0].url"></image>
+					<image v-if="fileList.length > 0" @click="handleClickImg(fileList[0].url, index)"
+						class="first-image" :src="fileList[0].url"></image>
 				</view>
 				<view class="other-image-wrap">
 					<view class="other-image-item" v-for="(file, index) in fileList" :key="file.url">
-						<image :src="file.url"></image>
+						<image :src="file.url" @click="handleClickImg(file.url, index)"></image>
 						<icon type="clear" size="16" color="#ff0000" @click="removePicture(index)" />
 					</view>
 				</view>
@@ -45,7 +46,7 @@
 				<u-button @click="createPhotoRecord" :disabled="fileList.length === 0 || !voiceText"
 					icon="checkbox-mark" text="保存"></u-button>
 			</view>
-			<movable-area class="fixed-box">
+			<!-- <movable-area class="fixed-box">
 				<movable-view class="fixed-button" :x="x" :y="y" direction="all">
 
 					<view class="menuBox">
@@ -56,14 +57,22 @@
 								相册
 							</button>
 							<button class="menu-btn" hover-class="hClass" open-type="contact" @click="sjFile()">
-								<!-- <u-icon name="map" size="50" /> -->
+								
 								保存
 							</button>
 						</view>
 					</view>
 				</movable-view>
-			</movable-area>
+			</movable-area> -->
 		</view>
+		<u-modal :show="showModel" @confirm="confirm" :showConfirmButton="false" :closeOnClickOverlay="true"
+			ref="uModal">
+			<photo-annotation :photo-url="photoUrl" :show-model="showModel"
+				@close="showModel = false"></photo-annotation>
+		</u-modal>
+		<!-- <u-modal v-model="showModel">
+			<photo-annotation :photo-url="photoUrl"></photo-annotation>
+		</u-modal> -->
 
 	</view>
 </template>
@@ -72,29 +81,65 @@
 	import {
 		getAccessToken
 	} from '@/utils/auth'
+	import photoAnnotation from './common/photoAnnotation/index'
 	const plugin = requirePlugin('WechatSI')
 	const manager = plugin.getRecordRecognitionManager()
 	export default {
-
+		components: {
+			photoAnnotation
+		},
 		data() {
 			return {
 				animationData: {},
 				off: true,
 				x: 320, //x坐标
-				y: 520, //y坐标
+				y: 420, //y坐标
 
 				cameraPosition: 'back', // 默认使用后置摄像头
 				isRecording: false,
 				voiceText: '',
 				fileList: [],
 				recordingBtnText: '说',
-				isShow: false
+				isShow: false,
+				showModel: false,
+				photoUrl: ''
 			};
 		},
 		mounted() {
 			this.initRecord()
 		},
 		methods: {
+			confirm() {
+				setTimeout(() => {
+					// 3秒后自动关闭
+					this.show = false;
+					// 如果不想关闭，而单是清除loading状态，需要通过ref手动调用方法
+					// this.$refs.uModal.clearLoading();
+				}, 3000)
+			},
+			handleClickImg(url) {
+				this.showModel = true
+				this.photoUrl = url
+				const vm = this
+				// uni.navigateTo({
+				// 	url: '/pages/common/photoAnnotation/index',
+				// 	events: {
+				// 		acceptDataFromOpenedPage: function(data) {
+				// 			console.log(data, 'data')
+				// 		},
+				// 		getEditCompleteImg: function(imgData) {
+				// 			console.log(imgData, 'imgData')
+				// 			// 和之前一样的处理逻辑
+				// 		}
+				// 	},
+				// 	success: function(res) {
+				// 		console.log('res', res)
+				// 		res.eventChannel.emit('acceptDataFromOpenerPage', {
+				// 			data: url
+				// 		})
+				// 	}
+				// })
+			},
 			// 悬浮按钮
 			declick() {
 				if (this.off) {
@@ -212,7 +257,7 @@
 			},
 			uploadFile(filePath) {
 				const uploadTask = uni.uploadFile({
-					url: 'http://www.heimi.site/gz-api/v1/admin-api/infra/file/uploadFile',
+					url: 'https://www.heimi.site/gz-api/v1/admin-api/infra/file/uploadFile',
 					header: {
 						'Authorization': 'Bearer ' + getAccessToken(),
 						'tenant-id': '1',
@@ -496,10 +541,10 @@
 	.fixed-button {
 		pointer-events: auto;
 		width: 200rpx;
-		height: 300rpx;
+		height: 340rpx;
 		right: 200rpx;
 		left: auto;
-		top: 70vh;
+		top: 80vh;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -507,16 +552,16 @@
 	}
 
 	::v-deep .menu-btn {
-		height: 40px;
-		width: 170rpx;
+		height: 30px;
+		width: 100rpx;
 		background-color: transparent;
 		display: inline-block;
 		padding-left: 0px !important;
 		margin-left: 0px !important;
-		font-size: 18px !important;
+		font-size: 14px !important;
 		color: white;
 		text-align: center;
-		line-height: 40px;
+		line-height: 30px;
 
 		&:first-child {
 			margin-top: 30rpx;
@@ -526,17 +571,17 @@
 	}
 
 	.posi {
-		width: 140rpx;
-		height: 300rpx !important;
+		width: 120rpx;
+		height: 160rpx !important;
 		position: absolute;
-		left: 2rpx;
-		bottom: -315rpx;
+		left: 0rpx;
+		bottom: -160rpx;
 		z-index: -1;
 		display: flex;
 		align-items: center;
 		flex-direction: column;
 		background-color: #3c9cff;
-		border-radius: 20rpx;
+		border-radius: 10rpx;
 	}
 
 	.posi>image {

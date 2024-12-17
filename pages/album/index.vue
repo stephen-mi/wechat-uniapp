@@ -15,12 +15,12 @@
 								<image :src="photoItem.url" class="photo" @click="previewImage(photoIndex)">
 								</image>
 								<u-radio-group v-model="radiovalue" placement="row" @change="groupChange">
-									<u-radio :customStyle="{ position: 'absolute', bottom: '36px',right: '4px'}"
-										:key="photoIndex" :name="photoItem.name" @change="radioChange">
+									<u-radio :customStyle="{ position: 'absolute', bottom: '70px',right: '4px'}"
+										:key="photoIndex" :name="photoItem.id" @change="radioChange">
 										<!-- <u-icon name="camera-fill" size="24" color="#4888f4" @click="openCamera" /> -->
 									</u-radio>
 								</u-radio-group>
-								<text class="album-name">{{ photoItem.name }}</text>
+								<text class="album-voice-text">{{ photoItem.voiceText }}</text>
 							</u-grid-item>
 						</u-grid>
 					</u-collapse-item>
@@ -67,13 +67,13 @@
 			},
 			blur(e) {
 				this.albums = this.originAlbums.filter(item => {
-					return item.name.includes(e)
+					return item.voiceText.includes(e)
 				})
 			},
 			search(e) {
 
 				this.albums = this.originAlbums.filter(item => {
-					return item.name.includes(e)
+					return item.voiceText.includes(e)
 				})
 			},
 			GetPhotoPage() {
@@ -145,12 +145,13 @@
 
 		}
 
-		.album-name {
+		.album-voice-text {
 			text-align: center;
 			padding: 5px;
 			font-size: 12px;
 			color: #333;
 			width: 100px;
+			height: 50px;
 			// background-color: #ddd;
 			margin-bottom: 5px;
 		}
