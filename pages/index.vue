@@ -65,7 +65,7 @@
 				</movable-view>
 			</movable-area> -->
 		</view>
-		<u-modal :show="showModel" @confirm="confirm" :showConfirmButton="false" :closeOnClickOverlay="true"
+		<u-modal :show="showModel" :showConfirmButton="false" :closeOnClickOverlay="true" @confirm="confirm"
 			ref="uModal">
 			<photo-annotation :photo-url="photoUrl" :show-model="showModel"
 				@close="showModel = false"></photo-annotation>

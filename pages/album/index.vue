@@ -8,8 +8,8 @@
 
 		<view v-if="albums.length > 0" class="list">
 			<view v-for="(group, index) in albums" :key="index">
-				<u-collapse>
-					<u-collapse-item :title="group.date">
+				<u-collapse ref="collapse" :value="collapse">
+					<u-collapse-item :title="group.date" :name="group.date">
 						<u-grid :border="false" col="3">
 							<u-grid-item v-for="(photoItem, photoIndex) in group.photos" :key="photoIndex">
 								<image :src="photoItem.url" class="photo" @click="previewImage(photoIndex)">
@@ -23,6 +23,7 @@
 								<text class="album-voice-text">{{ photoItem.voiceText }}</text>
 							</u-grid-item>
 						</u-grid>
+						<u-button type="primary" @click="output()">销项</u-button>
 					</u-collapse-item>
 				</u-collapse>
 			</view>
@@ -40,7 +41,8 @@
 				currentIndex: -1, // 初始不显示预览
 				radiovalue: '',
 				originAlbums: [],
-				albums: []
+				albums: [],
+				collapse: []
 			};
 		},
 		onLoad() {
@@ -48,6 +50,18 @@
 			this.GetPhotoPage();
 		},
 		methods: {
+			output() {
+				console.log(this.albums, 'albums')
+				let checkedIds = []
+				this.albums.forEach(item => {
+					item.photos.forEach(photo => {
+						if (photo.checked) {
+							checkedIds.push(photo.id)
+						}
+					})
+				})
+				console.log(checkedIds, 'checkedIds')
+			},
 			openCamera() {
 				uni.chooseImage({
 					count: 1, // 默认9，设置图片的数量
@@ -93,6 +107,7 @@
 							'date': key,
 							'photos': obj[key]
 						})
+						this.collapse.push(key)
 					}
 					console.log(this.albums, 'this.albums')
 
@@ -102,6 +117,14 @@
 			},
 			radioChange(n) {
 				console.log('radioChange', n);
+				this.albums.forEach(item => {
+					item.photos.forEach(photo => {
+						if (n === photo.voiceText) {
+							photo.checked = true
+						}
+					})
+				})
+
 			},
 			groupChange(n) {
 				console.log('groupChange', n);
@@ -114,7 +137,7 @@
 	.container {
 		padding: 10px;
 		background-color: #fff;
-		height: 100vh;
+		height: 100%;
 
 		.top {
 			position: fixed;
@@ -151,7 +174,7 @@
 			font-size: 12px;
 			color: #333;
 			width: 100px;
-			height: 50px;
+			max-height: 50px;
 			// background-color: #ddd;
 			margin-bottom: 5px;
 		}
