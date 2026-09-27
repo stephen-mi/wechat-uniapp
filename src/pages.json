@@ -1,0 +1,173 @@
+{
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^u-(.*)": "uview-plus/components/u-$1/u-$1.vue"
+		}
+	},
+
+	"pages": [{
+		"path": "pages/login",
+		"style": {
+			"navigationBarTitleText": "登录"
+		}
+	}, {
+		"path": "pages/monitor/index",
+		"style": {
+			"navigationBarTitleText": "视频监控",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/monitor/org-select",
+		"style": {
+			"navigationBarTitleText": "选择组织",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/monitor/map",
+		"style": {
+			"navigationBarTitleText": "项目分布情况",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/v2/video/index",
+		"style": {
+			"navigationBarTitleText": "视频",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/v2/video/live",
+		"style": {
+			"navigationBarTitleText": "视频",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/v2/disposal/index",
+		"style": {
+			"navigationBarTitleText": "AI事件",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/v2/ai-event/index",
+		"style": {
+			"navigationBarTitleText": "处置闭环",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/v2/ai-analysis/index",
+		"style": {
+			"navigationBarTitleText": "AI分析",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/v2/report/index",
+		"style": {
+			"navigationBarTitleText": "安全报告",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/v2/report/daily",
+		"style": {
+			"navigationBarTitleText": "公司安全日报",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/warning/index",
+		"style": {
+			"navigationBarTitleText": "AI预警中心",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/analysis/index",
+		"style": {
+			"navigationBarTitleText": "应用分析",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/warning/process",
+		"style": {
+			"navigationBarTitleText": "隐患处理"
+		}
+	}, {
+		"path": "pages/index",
+		"style": {
+			"navigationBarTitleText": "移动端框架",
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/work/index",
+		"style": {
+			"navigationBarTitleText": "工作台"
+		}
+	}, {
+		"path": "pages/mine/index",
+		"style": {
+			"navigationBarTitleText": "我的"
+		}
+	}, {
+		"path": "pages/mine/avatar/index",
+		"style": {
+			"navigationBarTitleText": "修改头像"
+		}
+	}, {
+		"path": "pages/mine/info/index",
+		"style": {
+			"navigationBarTitleText": "个人信息"
+		}
+	}, {
+		"path": "pages/mine/info/edit",
+		"style": {
+			"navigationBarTitleText": "编辑资料"
+		}
+	}, {
+		"path": "pages/mine/pwd/index",
+		"style": {
+			"navigationBarTitleText": "修改密码"
+		}
+	}, {
+		"path": "pages/mine/setting/index",
+		"style": {
+			"navigationBarTitleText": "应用设置"
+		}
+	}, {
+		"path": "pages/mine/help/index",
+		"style": {
+			"navigationBarTitleText": "常见问题"
+		}
+	}, {
+		"path": "pages/mine/about/index",
+		"style": {
+			"navigationBarTitleText": "关于我们"
+		}
+	}, {
+		"path": "pages/common/webview/index",
+		"style": {
+			"navigationBarTitleText": "浏览网页"
+		}
+	}, {
+		"path": "pages/common/textview/index",
+		"style": {
+			"navigationBarTitleText": "浏览文本"
+		}
+	}, {
+		"path": "pages/common/agreement/index",
+		"style": {
+			"navigationBarTitleText": "协议"
+		}
+	}, {
+		"path": "pages/album/index",
+		"style": {
+			"navigationBarTitleText": "相册列表"
+		}
+	}, {
+		"path": "pages/common/photoAnnotation/index",
+		"style": {
+			"navigationBarTitleText": "照片标注"
+		}
+	}],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "RuoYi",
+		"navigationBarBackgroundColor": "#FFFFFF"
+	}
+}

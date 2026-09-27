@@ -1,0 +1,19 @@
+/** V2 页面主背景：浅蓝多段过渡（对齐设计稿） */
+$v2-page-gradient: linear-gradient(
+  180deg,
+  #8fc0ff 0%,
+  #a8ceff 14%,
+  #bdd9ff 28%,
+  #d0e5ff 42%,
+  #e0efff 58%,
+  #edf4fc 74%,
+  #f5f8fc 100%
+);
+
+/** 顶栏区域（略深于页面顶部，仍保持浅色） */
+$v2-header-gradient: linear-gradient(
+  180deg,
+  #7eb3ff 0%,
+  #9ec5ff 55%,
+  rgba(168, 206, 255, 0) 100%
+);

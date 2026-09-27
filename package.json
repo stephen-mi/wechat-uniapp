@@ -1,6 +1,46 @@
 {
+  "name": "heimi-uniapp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev:mp-weixin": "npx uni -p mp-weixin",
+    "build:mp-weixin": "npx uni build -p mp-weixin",
+    "type-check": "vue-tsc --noEmit",
+    "open:mp-weixin": "node scripts/open-weixin-devtools.js"
+  },
   "dependencies": {
-    "crypto-js": "^4.0.0",
-    "uview-ui": "^2.0.36"
+    "@dcloudio/uni-app": "3.0.0-4070620250821001",
+    "@dcloudio/uni-app-plus": "3.0.0-4070620250821001",
+    "@dcloudio/uni-components": "3.0.0-4070620250821001",
+    "@dcloudio/uni-h5": "3.0.0-4070620250821001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-4070620250821001",
+    "crypto-js": "^4.2.0",
+    "uview-plus": "^3.3.36",
+    "vue": "^3.4.21",
+    "vue-i18n": "^9.1.9",
+    "vuex": "^4.1.0"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.14",
+    "@dcloudio/uni-automator": "3.0.0-4070620250821001",
+    "@dcloudio/uni-cli-shared": "3.0.0-4070620250821001",
+    "@dcloudio/uni-stacktracey": "3.0.0-4070620250821001",
+    "@dcloudio/vite-plugin-uni": "3.0.0-4070620250821001",
+    "@vue/runtime-core": "^3.4.21",
+    "@vue/tsconfig": "^0.5.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "sass": "^1.77.8",
+    "typescript": "^5.4.5",
+    "unplugin-auto-import": "^0.18.2",
+    "vite": "5.2.8",
+    "vue-tsc": "^2.0.29"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.63.5"
   }
 }
