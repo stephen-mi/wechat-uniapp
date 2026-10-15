@@ -45,4 +45,15 @@ onLaunch(() => {
 <style lang="scss">
 @import 'uview-plus/index.scss';
 @import '@/static/scss/index.scss';
+
+page {
+  --u-primary: #23c993;
+  --u-primary-dark: #14b07e;
+  --u-primary-disabled: #a8ead4;
+  --u-primary-light: #e8f8f2;
+  --up-primary: #23c993;
+  --up-primary-dark: #14b07e;
+  --up-primary-disabled: #a8ead4;
+  --up-primary-light: #e8f8f2;
+}
 </style>

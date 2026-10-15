@@ -6,19 +6,19 @@
     >
       <view class="v2-header__left">
         <view v-if="showBack" class="v2-header__btn" @click="onBack">
-          <u-icon name="arrow-left" size="18" color="#fff" />
+          <u-icon name="arrow-left" size="18" color="#1a1a1a" />
         </view>
         <view class="v2-header__title-area">
           <text class="v2-header__title" @click.stop="emit('titleClick')">{{ title }}</text>
           <view v-if="titleDropdown" class="v2-header__chevron" @click.stop="emit('chevronClick')">
-            <u-icon name="arrow-down" size="12" color="#fff" />
+            <u-icon name="arrow-down" size="12" color="#1a1a1a" />
           </view>
         </view>
       </view>
       <view class="v2-header__right">
         <slot name="right">
           <view v-if="showSearch" class="v2-header__btn" @click="emit('search')">
-            <u-icon name="search" size="20" color="#fff" />
+            <u-icon name="search" size="20" color="#1a1a1a" />
           </view>
         </slot>
       </view>
@@ -63,7 +63,7 @@ function onBack(): void {
 
 .v2-header {
   background: $v2-header-gradient;
-  color: #fff;
+  color: #1a1a1a;
 }
 
 .v2-header__bar {

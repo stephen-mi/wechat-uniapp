@@ -30,48 +30,6 @@
 			"navigationStyle": "custom"
 		}
 	}, {
-		"path": "pages/v2/video/index",
-		"style": {
-			"navigationBarTitleText": "视频",
-			"navigationStyle": "custom"
-		}
-	}, {
-		"path": "pages/v2/video/live",
-		"style": {
-			"navigationBarTitleText": "视频",
-			"navigationStyle": "custom"
-		}
-	}, {
-		"path": "pages/v2/disposal/index",
-		"style": {
-			"navigationBarTitleText": "AI事件",
-			"navigationStyle": "custom"
-		}
-	}, {
-		"path": "pages/v2/ai-event/index",
-		"style": {
-			"navigationBarTitleText": "处置闭环",
-			"navigationStyle": "custom"
-		}
-	}, {
-		"path": "pages/v2/ai-analysis/index",
-		"style": {
-			"navigationBarTitleText": "AI分析",
-			"navigationStyle": "custom"
-		}
-	}, {
-		"path": "pages/v2/report/index",
-		"style": {
-			"navigationBarTitleText": "安全报告",
-			"navigationStyle": "custom"
-		}
-	}, {
-		"path": "pages/v2/report/daily",
-		"style": {
-			"navigationBarTitleText": "公司安全日报",
-			"navigationStyle": "custom"
-		}
-	}, {
 		"path": "pages/warning/index",
 		"style": {
 			"navigationBarTitleText": "AI预警中心",
@@ -165,6 +123,75 @@
 			"navigationBarTitleText": "照片标注"
 		}
 	}],
+	"subPackages": [{
+		"root": "package-video",
+		"name": "video",
+		"pages": [{
+			"path": "index",
+			"style": {
+				"navigationBarTitleText": "视频",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "live",
+			"style": {
+				"navigationBarTitleText": "视频",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "ai-analysis",
+			"style": {
+				"navigationBarTitleText": "AI分析",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "report",
+			"style": {
+				"navigationBarTitleText": "安全报告",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "report-daily",
+			"style": {
+				"navigationBarTitleText": "公司安全日报",
+				"navigationStyle": "custom"
+			}
+		}]
+	}, {
+		"root": "package-ai-event",
+		"name": "ai-event",
+		"pages": [{
+			"path": "index",
+			"style": {
+				"navigationBarTitleText": "AI事件",
+				"navigationStyle": "custom"
+			}
+		}]
+	}, {
+		"root": "package-disposal",
+		"name": "disposal",
+		"pages": [{
+			"path": "index",
+			"style": {
+				"navigationBarTitleText": "处置闭环",
+				"navigationStyle": "custom"
+			}
+		}]
+	}],
+	"preloadRule": {
+		"package-video/index": {
+			"network": "all",
+			"packages": ["ai-event", "disposal"]
+		},
+		"package-ai-event/index": {
+			"network": "all",
+			"packages": ["video", "disposal"]
+		},
+		"package-disposal/index": {
+			"network": "all",
+			"packages": ["video", "ai-event"]
+		}
+	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "RuoYi",

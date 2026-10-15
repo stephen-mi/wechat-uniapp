@@ -82,7 +82,7 @@ function goBack(): void {
 }
 
 function openReport(id: string): void {
-  uni.navigateTo({ url: `/pages/v2/report/daily?id=${encodeURIComponent(id)}` })
+  uni.navigateTo({ url: `/package-video/report-daily?id=${encodeURIComponent(id)}` })
 }
 
 onMounted(() => {
@@ -191,7 +191,7 @@ onMounted(() => {
   display: block;
   font-size: 32rpx;
   font-weight: 700;
-  color: #1a3a5c;
+  color: #1a3c34;
   margin-bottom: 20rpx;
 }
 
@@ -201,13 +201,13 @@ onMounted(() => {
   flex-wrap: wrap;
   margin-bottom: 12rpx;
   font-size: 26rpx;
-  color: #4a6078;
+  color: #4a6b60;
 }
 
 .report-card__value {
   font-size: 36rpx;
   font-weight: 700;
-  color: #1a3a5c;
+  color: #1a3c34;
   margin: 0 4rpx;
 }
 
@@ -229,7 +229,7 @@ onMounted(() => {
 
 .report-card__score {
   font-size: 26rpx;
-  color: #1a3a5c;
+  color: #1a3c34;
   font-weight: 600;
 }
 
@@ -289,7 +289,7 @@ onMounted(() => {
   right: 8rpx;
   width: 48rpx;
   height: 8rpx;
-  background: #2979ff;
+  background: #23c993;
   border-radius: 4rpx;
   transform: rotate(-35deg);
 }

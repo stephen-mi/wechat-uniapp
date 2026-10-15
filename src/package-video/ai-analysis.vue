@@ -172,7 +172,7 @@ onMounted(() => {
   padding: 6rpx 20rpx 6rpx 16rpx;
   font-size: 22rpx;
   color: #fff;
-  background: linear-gradient(135deg, #4a90ff, #2979ff);
+  background: linear-gradient(135deg, #3dcf9e, #23c993);
   border-bottom-right-radius: 16rpx;
 }
 
@@ -194,7 +194,7 @@ onMounted(() => {
   margin-top: 8rpx;
   font-size: 40rpx;
   font-weight: 700;
-  color: #1a3a5c;
+  color: #1a3c34;
 }
 
 .cat-row {
@@ -217,7 +217,7 @@ onMounted(() => {
 .project-tag {
   padding: 8rpx 16rpx;
   font-size: 24rpx;
-  color: #2979ff;
+  color: #23c993;
   background: #eef4ff;
   border-radius: 8rpx;
 }

@@ -146,7 +146,7 @@
           </view>
         </view>
         <view class="project-card__shield">
-          <u-icon name="checkmark-circle-fill" size="36" color="#5b9cff" />
+          <u-icon name="checkmark-circle-fill" size="36" color="#23c993" />
         </view>
       </view>
 
@@ -298,7 +298,7 @@ onMounted(() => {
   display: block;
   font-size: 30rpx;
   font-weight: 700;
-  color: #1a3a5c;
+  color: #1a3c34;
   margin-bottom: 20rpx;
 }
 
@@ -315,7 +315,7 @@ onMounted(() => {
 
 .overview-head__label {
   font-size: 26rpx;
-  color: #4a6078;
+  color: #4a6b60;
 }
 
 .overview-head__right {
@@ -352,7 +352,7 @@ onMounted(() => {
 .overview-total__num {
   font-size: 56rpx;
   font-weight: 700;
-  color: #1a3a5c;
+  color: #1a3c34;
 }
 
 .overview-total__unit {
@@ -396,13 +396,13 @@ onMounted(() => {
   align-items: flex-start;
   gap: 12rpx;
   font-size: 24rpx;
-  color: #4a6078;
+  color: #4a6b60;
 }
 
 .rate-row__val {
   font-size: 32rpx;
   font-weight: 700;
-  color: #1a3a5c;
+  color: #1a3c34;
 }
 
 .rate-row__tags {
@@ -450,7 +450,7 @@ onMounted(() => {
 .rating-block__score {
   font-size: 36rpx;
   font-weight: 700;
-  color: #1a3a5c;
+  color: #1a3c34;
 }
 
 .rating-block__side {
@@ -617,7 +617,7 @@ onMounted(() => {
   color: #333;
 
   &--active {
-    color: #5b9cff;
+    color: #23c993;
   }
 
   &--cancel {

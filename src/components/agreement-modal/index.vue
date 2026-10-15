@@ -129,7 +129,7 @@ export default {
   width: 100%;
   color: #666;
   .textLink {
-    color: #268DFF;
+    color: #23c993;
   }
 }
 .modal-button-box {
@@ -147,6 +147,6 @@ export default {
 }
 .button-confirm {
   color: #FFF;
-  background-color: #268DFF;
+  background-color: #23c993;
 }
 </style>

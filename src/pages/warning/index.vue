@@ -56,7 +56,7 @@
         <view class="hazard-toolbar">
           <view class="hazard-toolbar__status">
             <text>未处理</text>
-            <u-icon name="arrow-down" size="12" color="#2979ff" />
+            <u-icon name="arrow-down" size="12" color="#23c993" />
           </view>
           <view class="hazard-toolbar__date">
             <text>26-08-27 - 26-09-2</text>
@@ -147,7 +147,7 @@ onMounted(() => {
 
   &--active {
     background: #eef4ff;
-    color: #2979ff;
+    color: #23c993;
   }
 }
 
@@ -224,9 +224,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  color: #2979ff;
+  color: #23c993;
   padding: 8rpx 20rpx;
-  border: 1rpx solid #2979ff;
+  border: 1rpx solid #23c993;
   border-radius: 8rpx;
 }
 
@@ -280,7 +280,7 @@ onMounted(() => {
   align-self: flex-start;
   padding: 4rpx 12rpx;
   font-size: 22rpx;
-  color: #2979ff;
+  color: #23c993;
   background: #eef4ff;
   border-radius: 6rpx;
 }
@@ -306,7 +306,7 @@ onMounted(() => {
 }
 
 .hazard-card__action {
-  color: #2979ff;
+  color: #23c993;
 }
 
 .page-bottom-space {

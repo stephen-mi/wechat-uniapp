@@ -159,8 +159,8 @@ onMounted(() => {
   border-radius: 8rpx;
 
   &--active {
-    color: #2979ff;
-    border-color: #2979ff;
+    color: #23c993;
+    border-color: #23c993;
     background: #eef4ff;
   }
 }
@@ -180,9 +180,9 @@ onMounted(() => {
   border-bottom: 4rpx solid transparent;
 
   &--active {
-    color: #2979ff;
+    color: #23c993;
     font-weight: 500;
-    border-bottom-color: #2979ff;
+    border-bottom-color: #23c993;
   }
 }
 
@@ -221,7 +221,7 @@ onMounted(() => {
   margin-top: 32rpx;
   text-align: center;
   font-size: 26rpx;
-  color: #2979ff;
+  color: #23c993;
 }
 
 .recent {

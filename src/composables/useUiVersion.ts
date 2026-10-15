@@ -5,7 +5,7 @@ export type UiVersion = 'v1' | 'v2'
 const STORAGE_KEY = 'app_ui_version'
 
 const V1_HOME = '/pages/monitor/index'
-const V2_HOME = '/pages/v2/video/index'
+const V2_HOME = '/package-video/index'
 
 export function getUiVersion(): UiVersion {
   try {

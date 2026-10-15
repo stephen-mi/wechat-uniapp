@@ -126,7 +126,7 @@ onMounted(() => {
   margin: 24rpx;
   padding: 32rpx;
   border-radius: 16rpx;
-  background: linear-gradient(135deg, #3a8bff, #2979ff);
+  background: linear-gradient(135deg, #1bbf8a, #23c993);
   color: #fff;
 }
 

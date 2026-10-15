@@ -100,7 +100,7 @@
 	}
 </script>
 <style lang="scss" >
-	$uni-primary: #2979ff !default;
+	$uni-primary: #23c993 !default;
 
 	.uni-section {
 		background-color: #fff;

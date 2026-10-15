@@ -48,7 +48,7 @@
           <text>项目详情</text>
         </view>
         <view class="sheet__btn sheet__btn--primary" @click="goMonitor">
-          <u-icon name="play-circle" size="20" color="#2979ff" />
+          <u-icon name="play-circle" size="20" color="#23c993" />
           <text>查看视频</text>
         </view>
       </view>
@@ -245,7 +245,7 @@ function toastFavorite(): void {
   color: #333;
 
   &--primary {
-    color: #2979ff;
+    color: #23c993;
     background: #eef4ff;
   }
 }

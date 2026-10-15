@@ -22,7 +22,7 @@
         <text class="rate-card__name">{{ p.name }}</text>
         <view class="rate-card__meta">
           <view class="rate-card__events">
-            <u-icon name="star-fill" size="14" color="#2979ff" />
+            <u-icon name="star-fill" size="14" color="#23c993" />
             <text>AI事件数量: {{ p.aiEventCount }}</text>
           </view>
           <view class="rate-card__trends">

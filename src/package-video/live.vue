@@ -358,7 +358,7 @@ async function ptzAction(action: string): Promise<void> {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #5a9cf0 0%, #c8ddf5 45%, #e8eef5 100%);
+  background: linear-gradient(180deg, #3dcf9e 0%, #c8f0e2 45%, #e7f6f0 100%);
 }
 
 .nav__bar {
@@ -532,7 +532,7 @@ async function ptzAction(action: string): Promise<void> {
   height: 100rpx;
   margin: -50rpx 0 0 -50rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4facfe, #2979ff);
+  background: linear-gradient(135deg, #5ed9b0, #23c993);
 }
 
 .ptz-arrow {

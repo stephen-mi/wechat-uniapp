@@ -145,7 +145,7 @@ onMounted(() => {
   border-radius: 12rpx;
 
   &--primary {
-    background: linear-gradient(135deg, #3a8bff, #2979ff);
+    background: linear-gradient(135deg, #1bbf8a, #23c993);
     color: #fff;
 
     .metrics__label {

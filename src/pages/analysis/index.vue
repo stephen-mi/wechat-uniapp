@@ -185,7 +185,7 @@ onMounted(() => {
 }
 
 .link {
-  color: #2979ff;
+  color: #23c993;
 }
 
 .muted {

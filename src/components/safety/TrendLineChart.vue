@@ -52,7 +52,7 @@ function draw(): void {
     return { x, y }
   })
 
-  ctx.setFillStyle('rgba(41, 121, 255, 0.15)')
+  ctx.setFillStyle('rgba(35, 201, 147, 0.15)')
   ctx.beginPath()
   ctx.moveTo(coords[0].x, h - padding)
   coords.forEach((c) => ctx.lineTo(c.x, c.y))
@@ -60,7 +60,7 @@ function draw(): void {
   ctx.closePath()
   ctx.fill()
 
-  ctx.setStrokeStyle('#2979ff')
+  ctx.setStrokeStyle('#23c993')
   ctx.setLineWidth(2)
   ctx.beginPath()
   coords.forEach((c, i) => {
@@ -69,7 +69,7 @@ function draw(): void {
   })
   ctx.stroke()
 
-  ctx.setFillStyle('#2979ff')
+  ctx.setFillStyle('#23c993')
   coords.forEach((c) => {
     ctx.beginPath()
     ctx.arc(c.x, c.y, 4, 0, Math.PI * 2)

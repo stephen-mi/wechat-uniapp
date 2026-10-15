@@ -93,7 +93,7 @@ onMounted(() => {
   color: #999;
 
   &--active {
-    color: #2979ff;
+    color: #23c993;
   }
 }
 </style>

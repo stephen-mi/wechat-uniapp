@@ -99,9 +99,9 @@ function onClose(): void {
   border-bottom: 4rpx solid transparent;
 
   &--active {
-    color: #2979ff;
+    color: #23c993;
     font-weight: 500;
-    border-bottom-color: #2979ff;
+    border-bottom-color: #23c993;
   }
 }
 </style>

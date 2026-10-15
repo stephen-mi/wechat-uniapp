@@ -1,7 +1,7 @@
 <template>
   <view class="tabbar" :style="{ paddingBottom: safeBottom + 'px' }">
     <view
-      v-for="item in tabs"
+      v-for="item in visibleTabs"
       :key="item.key"
       class="tabbar__item"
       @click="switchTo(item.path)"
@@ -27,15 +27,24 @@ defineProps<{
 const safeBottom = ref(0)
 
 const tabs = [
-  { key: 'video' as const, text: '视频', path: '/pages/v2/video/index', icon: 'play-circle' },
+  { key: 'video' as const, text: '视频', path: '/package-video/index', icon: 'play-circle', hidden: false },
   {
     key: 'disposal' as const,
     text: 'AI事件',
-    path: '/pages/v2/disposal/index',
-    icon: 'checkmark-circle'
+    path: '/package-ai-event/index',
+    icon: 'checkmark-circle',
+    hidden: false
   },
-  { key: 'ai-event' as const, text: '处置闭环', path: '/pages/v2/ai-event/index', icon: 'star-fill' }
+  {
+    key: 'ai-event' as const,
+    text: '处置闭环',
+    path: '/package-disposal/index',
+    icon: 'star-fill',
+    hidden: true
+  }
 ]
+
+const visibleTabs = tabs.filter((item) => !item.hidden)
 
 function switchTo(path: string): void {
   uni.reLaunch({ url: path })
@@ -77,7 +86,7 @@ onMounted(() => {
   justify-content: center;
 
   &--active {
-    background: linear-gradient(135deg, #4facfe, #2979ff);
+    background: linear-gradient(135deg, #5ed9b0, #23c993);
   }
 }
 
@@ -86,7 +95,7 @@ onMounted(() => {
   color: #999;
 
   &--active {
-    color: #2979ff;
+    color: #23c993;
     font-weight: 500;
   }
 }

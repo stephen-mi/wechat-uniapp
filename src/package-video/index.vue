@@ -11,21 +11,21 @@
           <view class="header-actions">
             <template v-if="viewMode === 'cameras'">
               <view class="v2-header__btn" @click="toggleViewMode">
-                <u-icon name="grid" size="18" color="#fff" />
+                <u-icon name="grid" size="18" color="#1a1a1a" />
               </view>
               <view class="v2-header__btn" @click="toastFilter">
-                <u-icon name="list" size="18" color="#fff" />
+                <u-icon name="list" size="18" color="#1a1a1a" />
               </view>
               <view class="v2-header__btn" @click="toastSearch">
-                <u-icon name="search" size="18" color="#fff" />
+                <u-icon name="search" size="18" color="#1a1a1a" />
               </view>
             </template>
             <template v-else>
               <view class="v2-header__btn" @click="toggleViewMode">
-                <u-icon name="grid" size="18" color="#fff" />
+                <u-icon name="grid" size="18" color="#1a1a1a" />
               </view>
               <view class="v2-header__btn" @click="toastSearch">
-                <u-icon name="search" size="18" color="#fff" />
+                <u-icon name="search" size="18" color="#1a1a1a" />
               </view>
             </template>
           </view>
@@ -35,48 +35,49 @@
       <view class="analysis-card">
         <view class="analysis-card__head">
           <view class="analysis-card__label">
-            <u-icon name="star-fill" size="16" color="#fff" />
+            <u-icon name="star-fill" size="16" color="#1a1a1a" />
             <text>AI分析</text>
           </view>
           <view class="analysis-card__link" @click.stop="goAiAnalysisDetail">
             <text>详情</text>
-            <u-icon name="arrow-right" size="12" color="rgba(255,255,255,0.95)" />
+            <u-icon name="arrow-right" size="12" color="#2f6b58" />
           </view>
         </view>
-        <text class="analysis-card__time">{{ displayAnalysis.timeLabel }}</text>
-        <view class="analysis-card__summary-stream">
-          <text class="analysis-card__summary">{{ summaryDisplayed }}</text>
-          <text v-if="summaryTyping" class="analysis-card__cursor">▍</text>
-        </view>
-        <view class="analysis-card__foot">
-          <view class="analysis-card__report" @click.stop="goReport">
-            <u-icon name="file-text" size="16" color="#fff" />
-            <text>报告</text>
+        <view v-show="analysisExpanded" class="analysis-card__body">
+          <text class="analysis-card__time">{{ displayAnalysis.timeLabel }}</text>
+          <view class="analysis-card__summary-stream">
+            <text class="analysis-card__summary">{{ summaryDisplayed }}</text>
+            <text v-if="summaryTyping" class="analysis-card__cursor">▍</text>
           </view>
-          <text
-            v-if="viewMode === 'projects'"
-            class="analysis-card__hint"
-            @click.stop="goReport"
-          >
-            {{ v2AiAnalysis.reportHint }}
-          </text>
+          <view class="analysis-card__foot">
+            <view class="analysis-card__report" @click.stop="goReport">
+              <u-icon name="file-text" size="16" color="#1a1a1a" />
+              <text>报告</text>
+            </view>
+            <text
+              v-if="viewMode === 'projects'"
+              class="analysis-card__hint"
+              @click.stop="goReport"
+            >
+              {{ v2AiAnalysis.reportHint }}
+            </text>
+          </view>
+        </view>
+        <view class="analysis-card__toggle" @click="toggleAnalysis">
+          <text>{{ analysisExpanded ? '收起' : '展开' }}</text>
+          <u-icon :name="analysisExpanded ? 'arrow-up' : 'arrow-down'" size="12" color="#2f6b58" />
         </view>
       </view>
     </view>
 
-    <scroll-view
-      scroll-y
-      class="scroll"
-      :style="{ height: scrollHeight }"
-      :show-scrollbar="false"
-      :enhanced="true"
-    >
+    <view v-if="viewMode === 'projects'" class="section-title">
+      <u-icon name="grid" size="16" color="#2f6b58" />
+      <text>项目列表</text>
+    </view>
+
+    <scroll-view scroll-y class="scroll" :show-scrollbar="false" :enhanced="true">
       <!-- 项目列表视图（设计图 1.3 列表态） -->
       <view v-if="viewMode === 'projects'" class="list-panel">
-        <view class="section-title">
-          <u-icon name="grid" size="16" color="#3d6a9e" />
-          <text>项目列表</text>
-        </view>
         <view class="project-grid">
           <view v-for="p in projects" :key="p.id" class="project-card" @click="toastProject(p.name)">
             <view class="project-card__cover-wrap">
@@ -127,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import V2TopHeader from '@/components/v2/V2TopHeader.vue'
 import V2TabBar from '@/components/nav/V2TabBar.vue'
 import { useMonitorContext } from '@/composables/useMonitorContext'
@@ -138,8 +139,6 @@ import {
   v2Projects,
   type V2CameraFeed
 } from '@/mock/v2-home'
-import { getLayoutMetrics, getNavLayout } from '@/utils/layout-metrics'
-
 type VideoViewMode = 'projects' | 'cameras'
 
 const { monitorOrgName } = useMonitorContext()
@@ -147,7 +146,7 @@ const orgTitle = monitorOrgName
 const projects = v2Projects
 const cameraFeeds = ref<V2CameraFeed[]>([...v2CameraFeeds])
 const viewMode = ref<VideoViewMode>('projects')
-const scrollHeight = ref('600px')
+const analysisExpanded = ref(true)
 
 const displayAnalysis = computed(() =>
   viewMode.value === 'cameras' ? v2AiAnalysisCameraView : v2AiAnalysis
@@ -190,6 +189,10 @@ function restartSummaryTypewriter(): void {
 watch(summaryFullText, restartSummaryTypewriter, { immediate: true })
 onUnmounted(clearSummaryTimer)
 
+function toggleAnalysis(): void {
+  analysisExpanded.value = !analysisExpanded.value
+}
+
 function toggleViewMode(): void {
   viewMode.value = viewMode.value === 'projects' ? 'cameras' : 'projects'
 }
@@ -205,11 +208,11 @@ function goOrgSelect(): void {
 }
 
 function goReport(): void {
-  uni.navigateTo({ url: '/pages/v2/report/index' })
+  uni.navigateTo({ url: '/package-video/report' })
 }
 
 function goAiAnalysisDetail(): void {
-  uni.navigateTo({ url: '/pages/v2/ai-analysis/index' })
+  uni.navigateTo({ url: '/package-video/ai-analysis' })
 }
 
 function toastSearch(): void {
@@ -226,25 +229,23 @@ function toastProject(name: string): void {
 
 function openLivePlayer(cam: V2CameraFeed): void {
   uni.navigateTo({
-    url: `/pages/v2/video/live?id=${encodeURIComponent(cam.id)}&name=${encodeURIComponent(cam.cameraName)}`
+    url: `/package-video/live?id=${encodeURIComponent(cam.id)}&name=${encodeURIComponent(cam.cameraName)}`
   })
 }
 
-onMounted(() => {
-  const { windowHeight, safeAreaBottom } = getLayoutMetrics()
-  const heroPx = getNavLayout().navTotalHeight + uni.upx2px(360)
-  const bottom = uni.upx2px(110) + safeAreaBottom
-  scrollHeight.value = `${Math.max(windowHeight - heroPx - bottom, 280)}px`
-})
 </script>
 
 <style lang="scss" scoped>
 @import '@/static/scss/v2-gradient.scss';
 
 .page {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-bottom: calc(110rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(110rpx + env(safe-area-inset-bottom));
   background: $v2-page-gradient;
   background-attachment: fixed;
 }
@@ -277,12 +278,12 @@ onMounted(() => {
   margin: 0 24rpx 16rpx;
   padding: 28rpx 24rpx;
   border-radius: 24rpx;
-  color: #fff;
+  color: #1a1a1a;
   background: rgba(255, 255, 255, 0.16);
   border: 1rpx solid rgba(255, 255, 255, 0.32);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  box-shadow: 0 8rpx 32rpx rgba(100, 150, 220, 0.12);
+  box-shadow: 0 8rpx 32rpx rgba(35, 160, 120, 0.12);
 }
 
 .analysis-card__head {
@@ -297,7 +298,7 @@ onMounted(() => {
   gap: 8rpx;
   font-size: 30rpx;
   font-weight: 600;
-  color: #fff;
+  color: #1a1a1a;
 }
 
 .analysis-card__link {
@@ -305,14 +306,14 @@ onMounted(() => {
   align-items: center;
   gap: 4rpx;
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.92);
+  color: #2f6b58;
 }
 
 .analysis-card__time {
   display: block;
   margin-top: 16rpx;
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.85);
+  color: #4a6b60;
 }
 
 .analysis-card__summary-stream {
@@ -324,7 +325,7 @@ onMounted(() => {
 
 .analysis-card__summary {
   font-size: 26rpx;
-  color: #fff;
+  color: #1a1a1a;
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-all;
@@ -332,7 +333,7 @@ onMounted(() => {
 
 .analysis-card__cursor {
   font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.92);
+  color: #2f6b58;
   line-height: 1.55;
   margin-left: 2rpx;
   animation: ai-cursor-blink 0.85s step-end infinite;
@@ -360,37 +361,50 @@ onMounted(() => {
   padding: 10rpx 24rpx;
   border-radius: 999rpx;
   font-size: 24rpx;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1rpx solid rgba(255, 255, 255, 0.45);
+  color: #1a1a1a;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1rpx solid rgba(47, 107, 88, 0.28);
 }
 
 .analysis-card__hint {
   display: block;
   margin-top: 16rpx;
   font-size: 24rpx;
-  color: #fff;
+  color: #2f6b58;
   text-decoration: underline;
   opacity: 0.95;
 }
 
+.analysis-card__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  color: #2f6b58;
+}
+
 .scroll {
   flex: 1;
+  height: 0;
+  min-height: 0;
+  width: 100%;
   box-sizing: border-box;
 }
 
 .list-panel {
-  padding: 8rpx 24rpx 0;
-  min-height: 100%;
+  padding: 0 24rpx;
 }
 
 .section-title {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 10rpx;
-  margin-bottom: 20rpx;
+  padding: 8rpx 24rpx 20rpx;
   font-size: 30rpx;
-  color: #3d6a9e;
+  color: #2f6b58;
   font-weight: 600;
 }
 
@@ -406,14 +420,14 @@ onMounted(() => {
   background: #fff;
   border-radius: 20rpx;
   overflow: hidden;
-  box-shadow: 0 8rpx 24rpx rgba(120, 160, 210, 0.14);
+  box-shadow: 0 8rpx 24rpx rgba(35, 160, 120, 0.14);
 }
 
 .project-card__cover-wrap,
 .camera-card__cover-wrap {
   position: relative;
   height: 220rpx;
-  background: #e8eef5;
+  background: #e7f6f0;
 }
 
 .project-card__cover,
@@ -443,8 +457,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, #6eb6ff 0%, #3a8bff 45%, #2979ff 100%);
-  box-shadow: 0 4rpx 16rpx rgba(41, 121, 255, 0.45);
+  background: linear-gradient(145deg, #7ee4c0 0%, #1bbf8a 45%, #23c993 100%);
+  box-shadow: 0 4rpx 16rpx rgba(35, 201, 147, 0.45);
   animation: spark-breathe 2.2s ease-in-out infinite;
   z-index: 2;
 }
@@ -454,13 +468,13 @@ onMounted(() => {
   100% {
     opacity: 0.88;
     transform: scale(1);
-    box-shadow: 0 4rpx 12rpx rgba(41, 121, 255, 0.35);
+    box-shadow: 0 4rpx 12rpx rgba(35, 201, 147, 0.35);
   }
 
   50% {
     opacity: 1;
     transform: scale(1.06);
-    box-shadow: 0 6rpx 24rpx rgba(41, 121, 255, 0.75);
+    box-shadow: 0 6rpx 24rpx rgba(35, 201, 147, 0.75);
   }
 }
 
