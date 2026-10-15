@@ -18,7 +18,7 @@
 						<input v-model="loginForm.password" type="password" class="input" placeholder="请输入密码" maxlength="20" />
 					</view>
 					<view class="version-row">
-						<text class="version-row__label">新版首页（视频 / AI事件 / 处置闭环）</text>
+						<text class="version-row__label">新版首页（视频 / AI事件 / 任务）</text>
 						<u-switch v-model="useNewVersion" size="20" @change="onVersionSwitch" />
 					</view>
 					<view class="action-btn">

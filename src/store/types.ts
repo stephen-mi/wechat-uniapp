@@ -15,6 +15,7 @@ export interface PhotoState {
 export interface RootState {
   user: UserState
   photo: PhotoState
+  task: import('@/store/modules/task').TaskState
 }
 
 export interface LoginFormPayload {

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>Bimface 图纸</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #1c1f24;
+        color: #e8e8e8;
+        font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+      }
+      #domId {
+        position: absolute;
+        inset: 0;
+      }
+      #mask {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 24px;
+        text-align: center;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          #1c1f24;
+        background-size: 24px 24px;
+      }
+      #mask h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      #mask p {
+        margin: 0;
+        max-width: 280px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #9aa0a6;
+      }
+      .badge {
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(35, 201, 147, 0.18);
+        color: #5ed9b0;
+        font-size: 12px;
+      }
+      #status {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        z-index: 2;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.45);
+        font-size: 12px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="domId"></div>
+    <div id="status"></div>
+    <div id="mask">
+      <span class="badge">Bimface</span>
+      <h1 id="title">图纸加载中</h1>
+      <p id="desc"></p>
+    </div>
+    <script src="https://static.bimface.com/api/BimfaceSDKLoader/BimfaceSDKLoader@latest-release.js"></script>
+    <script>
+      var params = new URLSearchParams(location.search)
+      var viewToken = params.get('viewToken') || ''
+      var modelId = params.get('modelId') || '0'
+      var name = params.get('name') || '图纸'
+      var suffix = (params.get('suffix') || 'dwg').toLowerCase()
+      var previewUrl = params.get('previewUrl') || ''
+      var context = params.get('context') || ''
+      var titleEl = document.getElementById('title')
+      var descEl = document.getElementById('desc')
+      var maskEl = document.getElementById('mask')
+      var statusEl = document.getElementById('status')
+
+      titleEl.textContent = name
+      descEl.textContent = context
+
+      function showMask(title, desc) {
+        titleEl.textContent = title
+        descEl.textContent = desc || ''
+        maskEl.style.display = 'flex'
+      }
+
+      function hideMask() {
+        maskEl.style.display = 'none'
+      }
+
+      function showStatus(text) {
+        statusEl.style.display = 'block'
+        statusEl.textContent = text
+      }
+
+      if (suffix === 'pdf' && previewUrl) {
+        hideMask()
+        var frame = document.createElement('iframe')
+        frame.src = previewUrl
+        frame.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;'
+        document.body.appendChild(frame)
+      } else if (!viewToken) {
+        showMask(name, '当前图纸还没有 viewToken。在 config.ts 填入 bimfaceDemoViewToken，或接入 getBimfaceViewtoken 后即可加载。')
+      } else if (typeof BimfaceSDKLoader === 'undefined') {
+        showMask(name, 'Bimface SDK 未加载，请检查网络是否能访问 static.bimface.com')
+      } else {
+        showStatus('图纸加载中…')
+        var loaderConfig = new BimfaceSDKLoaderConfig()
+        loaderConfig.viewToken = viewToken
+        BimfaceSDKLoader.load(loaderConfig, onSuccess, onFail)
+      }
+
+      function onSuccess(viewMetaData) {
+        var dom = document.getElementById('domId')
+        var viewType = viewMetaData && viewMetaData.viewType
+        var app
+        if (viewType === '3DView') {
+          var config3d = new Glodon.Bimface.Application.WebApplication3DConfig()
+          config3d.domElement = dom
+          app = new Glodon.Bimface.Application.WebApplication3D(config3d)
+          var viewer3d = app.getViewer()
+          viewer3d.addEventListener(Glodon.Bimface.Viewer.Viewer3DEvent.ViewAdded, function () {
+            hideMask()
+            statusEl.style.display = 'none'
+          })
+          viewer3d.loadModel({ viewMetaData: viewMetaData })
+          return
+        }
+        var config = new Glodon.Bimface.Application.WebApplicationDrawingConfig()
+        config.domElement = dom
+        config.MobileToolbars = ['MainToolbar']
+        config.MobileButtons = ['Home', 'RectZoom', 'DrawingMeasure']
+        app = new Glodon.Bimface.Application.WebApplicationDrawing(config)
+        var viewer = app.getViewer()
+        viewer.addEventListener(Glodon.Bimface.Viewer.ViewerDrawingEvent.Loaded, function () {
+          hideMask()
+          statusEl.style.display = 'none'
+        })
+        viewer.loadDrawing({
+          viewToken: viewToken,
+          modelId: modelId
+        })
+      }
+
+      function onFail(error) {
+        var msg = (error && (error.message || error.msg)) || 'viewToken 无效或已过期'
+        showMask(name, String(msg))
+        statusEl.style.display = 'none'
+      }
+    </script>
+  </body>
+</html>

@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { onLaunch } from '@dcloudio/uni-app'
 import config from './config'
-import { getAccessToken } from '@/utils/auth'
-import { useTab } from '@/composables/useTab'
 
 defineOptions({
   globalData: {
     config
   }
 })
-
-const tab = useTab()
 
 function syncGlobalConfig(): void {
   try {
@@ -26,19 +22,10 @@ function syncGlobalConfig(): void {
   }
 }
 
-function checkLogin(): void {
-  if (!getAccessToken()) {
-    tab.reLaunch('/pages/login')
-  }
-}
-
 onLaunch(() => {
   syncGlobalConfig()
   // 小程序端 getApp 在 onLaunch 同步阶段可能未挂载，下一帧再写一次 globalData
   setTimeout(syncGlobalConfig, 0)
-  // #ifdef H5
-  checkLogin()
-  // #endif
 })
 </script>
 

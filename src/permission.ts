@@ -13,14 +13,12 @@ const interceptors = ['navigateTo', 'redirectTo', 'reLaunch', 'switchTab'] as co
 
 interceptors.forEach((item) => {
   uni.addInterceptor(item, {
-    invoke(to: { path?: string; url: string }) {
+    invoke(to: { path?: string; url?: string }) {
+      const url = to.url || to.path || ''
       if (getAccessToken()) {
-        if (to.path === loginPage) {
-          uni.reLaunch({ url: '/' })
-        }
         return true
       }
-      if (checkWhite(to.url)) {
+      if (checkWhite(url)) {
         return true
       }
       uni.reLaunch({ url: loginPage })

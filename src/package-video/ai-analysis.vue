@@ -6,7 +6,7 @@
         :style="{ minHeight: nav.navBarHeight + 'px', paddingRight: nav.navPaddingRight + 'px' }"
       >
         <view class="nav__btn" @click="goBack">
-          <u-icon name="arrow-left" size="20" color="#fff" />
+          <u-icon name="arrow-left" size="20" color="#1a1a1a" />
         </view>
         <text class="nav__title">AI分析</text>
         <view class="nav__placeholder" />
@@ -100,16 +100,12 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@import '@/static/scss/v2-gradient.scss';
+
 .page {
   min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    #3d7fe8 0%,
-    #5a96ef 22%,
-    #8fb8f4 48%,
-    #c5daf8 72%,
-    #e8f0fa 100%
-  );
+  background: $v2-page-gradient;
+  background-attachment: fixed;
 }
 
 .nav__bar {
@@ -123,7 +119,7 @@ onMounted(() => {
   width: 64rpx;
   height: 64rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -134,7 +130,7 @@ onMounted(() => {
   text-align: center;
   font-size: 34rpx;
   font-weight: 600;
-  color: #fff;
+  color: #1a1a1a;
 }
 
 .nav__placeholder {
@@ -150,7 +146,7 @@ onMounted(() => {
   display: block;
   margin: 24rpx 0 16rpx;
   font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.85);
+  color: #2f6b58;
 }
 
 .event-card {
@@ -161,7 +157,7 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 8rpx 32rpx rgba(50, 100, 180, 0.12);
+  box-shadow: 0 8rpx 32rpx rgba(35, 201, 147, 0.12);
   overflow: hidden;
 }
 
@@ -218,7 +214,7 @@ onMounted(() => {
   padding: 8rpx 16rpx;
   font-size: 24rpx;
   color: #23c993;
-  background: #eef4ff;
+  background: #e7f6f0;
   border-radius: 8rpx;
 }
 

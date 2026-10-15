@@ -177,24 +177,81 @@
 				"navigationStyle": "custom"
 			}
 		}]
+	}, {
+		"root": "package-task",
+		"name": "task",
+		"pages": [{
+			"path": "index",
+			"style": {
+				"navigationBarTitleText": "任务",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "record",
+			"style": {
+				"navigationBarTitleText": "任务记录",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "graphic-progress",
+			"style": {
+				"navigationBarTitleText": "形象进度",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "photo-album",
+			"style": {
+				"navigationBarTitleText": "现场相册",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "photo-list",
+			"style": {
+				"navigationBarTitleText": "照片列表",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "transfer",
+			"style": {
+				"navigationBarTitleText": "作业面移交",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "transfer-detail",
+			"style": {
+				"navigationBarTitleText": "移交详情",
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "drawing",
+			"style": {
+				"navigationBarTitleText": "Bimface图纸",
+				"navigationBarBackgroundColor": "#1c1f24",
+				"navigationBarTextStyle": "white"
+			}
+		}]
 	}],
 	"preloadRule": {
 		"package-video/index": {
 			"network": "all",
-			"packages": ["ai-event", "disposal"]
+			"packages": ["ai-event", "disposal", "task"]
 		},
 		"package-ai-event/index": {
 			"network": "all",
-			"packages": ["video", "disposal"]
+			"packages": ["video", "disposal", "task"]
 		},
 		"package-disposal/index": {
 			"network": "all",
-			"packages": ["video", "ai-event"]
+			"packages": ["video", "ai-event", "task"]
+		},
+		"package-task/index": {
+			"network": "all",
+			"packages": ["video", "ai-event", "disposal"]
 		}
 	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "RuoYi",
+		"navigationBarTitleText": "siteflow",
 		"navigationBarBackgroundColor": "#FFFFFF"
 	}
 }

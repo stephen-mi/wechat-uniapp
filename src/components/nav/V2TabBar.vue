@@ -1,18 +1,21 @@
 <template>
-  <view class="tabbar" :style="{ paddingBottom: safeBottom + 'px' }">
-    <view
-      v-for="item in visibleTabs"
-      :key="item.key"
-      class="tabbar__item"
-      @click="switchTo(item.path)"
-    >
-      <view class="tabbar__icon-wrap" :class="{ 'tabbar__icon-wrap--active': current === item.key }">
-        <u-icon :name="item.icon" :size="22" :color="current === item.key ? '#fff' : '#999'" />
+  <view class="tabbar">
+    <view class="tabbar__row">
+      <view
+        v-for="item in visibleTabs"
+        :key="item.key"
+        class="tabbar__item"
+        @click="switchTo(item.path)"
+      >
+        <view class="tabbar__icon-wrap" :class="{ 'tabbar__icon-wrap--active': current === item.key }">
+          <u-icon :name="item.icon" :size="22" :color="current === item.key ? '#fff' : '#999'" />
+        </view>
+        <text class="tabbar__text" :class="{ 'tabbar__text--active': current === item.key }">
+          {{ item.text }}
+        </text>
       </view>
-      <text class="tabbar__text" :class="{ 'tabbar__text--active': current === item.key }">
-        {{ item.text }}
-      </text>
     </view>
+    <view class="tabbar__safe" :style="{ height: safeBottom + 'px' }" />
   </view>
 </template>
 
@@ -21,7 +24,7 @@ import { onMounted, ref } from 'vue'
 import { getLayoutMetrics } from '@/utils/layout-metrics'
 
 defineProps<{
-  current: 'video' | 'ai-event' | 'disposal'
+  current: 'video' | 'ai-event' | 'disposal' | 'task'
 }>()
 
 const safeBottom = ref(0)
@@ -33,6 +36,13 @@ const tabs = [
     text: 'AI事件',
     path: '/package-ai-event/index',
     icon: 'checkmark-circle',
+    hidden: false
+  },
+  {
+    key: 'task' as const,
+    text: '任务',
+    path: '/package-task/index',
+    icon: 'file-text',
     hidden: false
   },
   {
@@ -62,10 +72,18 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   z-index: 99;
-  display: flex;
-  height: 110rpx;
   background: #fff;
   border-top: 1rpx solid #eee;
+}
+
+.tabbar__row {
+  display: flex;
+  height: 100rpx;
+}
+
+.tabbar__safe {
+  width: 100%;
+  background: #fff;
 }
 
 .tabbar__item {
@@ -74,7 +92,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6rpx;
+  height: 100rpx;
 }
 
 .tabbar__icon-wrap {
@@ -91,7 +109,10 @@ onMounted(() => {
 }
 
 .tabbar__text {
+  margin-top: 4rpx;
   font-size: 22rpx;
+  line-height: 28rpx;
+  height: 28rpx;
   color: #999;
 
   &--active {

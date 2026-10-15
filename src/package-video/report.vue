@@ -6,12 +6,12 @@
         :style="{ minHeight: nav.navBarHeight + 'px', paddingRight: nav.navPaddingRight + 'px' }"
       >
         <view class="nav__btn" @click="goBack">
-          <u-icon name="arrow-left" size="20" color="#fff" />
+          <u-icon name="arrow-left" size="20" color="#1a1a1a" />
         </view>
         <text class="nav__title">安全报告</text>
         <view class="nav__push">
           <text class="nav__push-label">自动推送</text>
-          <u-switch v-model="autoPush" size="20" active-color="#19be6b" />
+          <u-switch v-model="autoPush" size="20" active-color="#23c993" />
         </view>
       </view>
     </view>
@@ -93,17 +93,12 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@import '@/static/scss/v2-gradient.scss';
+
 .page {
   min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    #3a7bd8 0%,
-    #5a94e8 12%,
-    #8fb8f0 28%,
-    #c5daf5 48%,
-    #e8f0f8 72%,
-    #f0f3f7 100%
-  );
+  background: $v2-page-gradient;
+  background-attachment: fixed;
 }
 
 .nav__bar {
@@ -117,7 +112,7 @@ onMounted(() => {
   width: 64rpx;
   height: 64rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,7 +124,7 @@ onMounted(() => {
   text-align: center;
   font-size: 34rpx;
   font-weight: 600;
-  color: #fff;
+  color: #1a1a1a;
 }
 
 .nav__push {
@@ -143,7 +138,7 @@ onMounted(() => {
 
 .nav__push-label {
   font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.95);
+  color: #1a1a1a;
 }
 
 .scroll {
@@ -161,12 +156,12 @@ onMounted(() => {
 .group__line {
   flex: 1;
   height: 1rpx;
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(47, 107, 88, 0.22);
 }
 
 .group__day {
   font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.9);
+  color: #2f6b58;
   flex-shrink: 0;
 }
 
@@ -266,9 +261,9 @@ onMounted(() => {
   position: relative;
   width: 120rpx;
   height: 140rpx;
-  background: linear-gradient(145deg, #fff 0%, #e8eef8 100%);
+  background: linear-gradient(145deg, #fff 0%, #e7f6f0 100%);
   border-radius: 12rpx;
-  box-shadow: 0 8rpx 20rpx rgba(80, 120, 180, 0.2);
+  box-shadow: 0 8rpx 20rpx rgba(35, 201, 147, 0.18);
   transform: rotate(-6deg);
 }
 

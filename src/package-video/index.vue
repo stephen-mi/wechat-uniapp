@@ -244,8 +244,8 @@ function openLivePlayer(cam: V2CameraFeed): void {
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
-  padding-bottom: calc(110rpx + constant(safe-area-inset-bottom));
-  padding-bottom: calc(110rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(100rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
   background: $v2-page-gradient;
   background-attachment: fixed;
 }

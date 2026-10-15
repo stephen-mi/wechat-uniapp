@@ -1,5 +1,5 @@
 {
-    "name" : "黑米云",
+    "name" : "siteflow",
     "appid" : "__UNI__F87DEF1",
     "description" : "",
     "versionName" : "1.0.0",
@@ -74,7 +74,7 @@
             "port" : 9090,
             "https" : false
         },
-        "title" : "黑米云管理后台",
+        "title" : "siteflow管理后台",
         "router" : {
             "mode" : "hash",
             "base" : "./"

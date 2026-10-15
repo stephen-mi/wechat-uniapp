@@ -17,6 +17,24 @@ export interface NavLayout {
 }
 
 const NAV_EXTRA_GAP = 8
+/** iPhone 底部横条最大高度。超出该值视为 iOS 12 等旧系统的异常返回 */
+const MAX_SAFE_AREA_BOTTOM = 34
+
+function clampSafeAreaBottom(
+  screenHeight: number,
+  inset?: number,
+  safeAreaBottomY?: number
+): number {
+  const fromRect =
+    screenHeight > 0 && typeof safeAreaBottomY === 'number'
+      ? screenHeight - safeAreaBottomY
+      : undefined
+  const candidates = [inset, fromRect].filter(
+    (value): value is number => typeof value === 'number' && value >= 0 && value <= MAX_SAFE_AREA_BOTTOM
+  )
+  if (candidates.length === 0) return 0
+  return Math.min(...candidates)
+}
 
 export function getNavLayout(): NavLayout {
   const { statusBarHeight } = getLayoutMetrics()
@@ -86,7 +104,11 @@ export function getLayoutMetrics(): LayoutMetrics {
       return {
         statusBarHeight: win.statusBarHeight ?? 0,
         windowHeight: win.windowHeight ?? fallback.windowHeight,
-        safeAreaBottom: win.safeAreaInsets?.bottom ?? 0
+        safeAreaBottom: clampSafeAreaBottom(
+          win.screenHeight ?? 0,
+          win.safeAreaInsets?.bottom,
+          win.safeArea?.bottom
+        )
       }
     }
   } catch {
@@ -98,7 +120,11 @@ export function getLayoutMetrics(): LayoutMetrics {
     return {
       statusBarHeight: sys.statusBarHeight ?? 0,
       windowHeight: sys.windowHeight ?? fallback.windowHeight,
-      safeAreaBottom: sys.safeAreaInsets?.bottom ?? 0
+      safeAreaBottom: clampSafeAreaBottom(
+        sys.screenHeight ?? 0,
+        sys.safeAreaInsets?.bottom,
+        sys.safeArea?.bottom
+      )
     }
   } catch {
     return fallback
