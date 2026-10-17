@@ -104,13 +104,17 @@ const actions = {
   },
 
   LogOut({ commit }: UserActionContext): Promise<void> {
-    return logout().then(() => {
+    const clearLocalSession = (): void => {
+      commit('SET_ID', 0)
+      commit('SET_NAME', '')
+      commit('SET_AVATAR', '')
       commit('SET_ROLES', [])
       commit('SET_PERMISSIONS', [])
       removeToken()
       removeTenantId()
       storage.clean()
-    })
+    }
+    return logout().then(clearLocalSession, clearLocalSession)
   }
 }
 

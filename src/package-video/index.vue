@@ -1,36 +1,65 @@
 <template>
-  <view class="page">
+  <view class="page" :class="tabEnterClass">
     <view class="page__hero">
       <V2TopHeader
         :title="orgTitle"
         :show-search="false"
-        @title-click="goOrgSelect"
-        @chevron-click="toggleViewMode"
+        @title-click="openOrgPicker"
+        @chevron-click="openOrgPicker"
       >
-        <template #right>
+        <template #sub>
           <view class="header-actions">
-            <template v-if="viewMode === 'cameras'">
+            <view v-if="searchOpen" class="header-search">
+              <input
+                v-model="deviceKeyword"
+                class="header-search__input"
+                placeholder="请输入"
+                confirm-type="search"
+                :focus="searchFocused"
+                @input="onKeywordInput"
+                @confirm="onKeywordConfirm"
+              />
+              <u-icon name="search" size="16" color="#8aa399" />
+            </view>
+            <view class="header-actions__icons">
               <view class="v2-header__btn" @click="toggleViewMode">
                 <u-icon name="grid" size="18" color="#1a1a1a" />
               </view>
-              <view class="v2-header__btn" @click="toastFilter">
+              <view
+                v-if="viewMode === 'cameras'"
+                class="v2-header__btn"
+                :class="{ 'v2-header__btn--on': statusMenuOpen || deviceStatus !== 'all' }"
+                @click="toggleStatusMenu"
+              >
                 <u-icon name="list" size="18" color="#1a1a1a" />
               </view>
-              <view class="v2-header__btn" @click="toastSearch">
+              <view
+                class="v2-header__btn"
+                :class="{ 'v2-header__btn--on': searchOpen || deviceKeyword.trim() }"
+                @click="toggleDeviceSearch"
+              >
                 <u-icon name="search" size="18" color="#1a1a1a" />
               </view>
-            </template>
-            <template v-else>
-              <view class="v2-header__btn" @click="toggleViewMode">
-                <u-icon name="grid" size="18" color="#1a1a1a" />
-              </view>
-              <view class="v2-header__btn" @click="toastSearch">
-                <u-icon name="search" size="18" color="#1a1a1a" />
-              </view>
-            </template>
+            </view>
           </view>
         </template>
       </V2TopHeader>
+
+      <view v-if="viewMode === 'cameras' && statusMenuOpen" class="device-filter">
+        <view v-if="statusMenuOpen" class="device-filter__menu">
+          <view
+            v-for="item in deviceStatusOptions"
+            :key="item.label"
+            class="device-filter__option"
+            :class="{ 'device-filter__option--on': deviceStatus === item.value }"
+            @click="changeDeviceStatus(item.value)"
+          >
+            <text>{{ item.label }}</text>
+          </view>
+        </view>
+      </view>
+
+    <OrgPicker v-model:show="orgPickerVisible" />
 
       <view class="analysis-card">
         <view class="analysis-card__head">
@@ -74,15 +103,35 @@
       <u-icon name="grid" size="16" color="#2f6b58" />
       <text>项目列表</text>
     </view>
+    <view v-else class="section-title">
+      <u-icon name="grid" size="16" color="#2f6b58" />
+      <text>设备列表</text>
+    </view>
 
-    <scroll-view scroll-y class="scroll" :show-scrollbar="false" :enhanced="true">
+    <scroll-view
+      scroll-y
+      class="scroll"
+      :show-scrollbar="false"
+      :enhanced="true"
+      @scrolltolower="onScrollToLower"
+    >
       <!-- 项目列表视图（设计图 1.3 列表态） -->
       <view v-if="viewMode === 'projects'" class="list-panel">
-        <view class="project-grid">
-          <view v-for="p in projects" :key="p.id" class="project-card" @click="toastProject(p.name)">
+          <view v-if="projectsLoading" class="list-empty">项目加载中</view>
+          <view v-else-if="projects.length === 0" class="list-empty">{{ projectEmptyText }}</view>
+          <view v-else class="project-grid">
+          <view v-for="p in projects" :key="p.id" class="project-card" @click="openProject(p)">
             <view class="project-card__cover-wrap">
-              <image class="project-card__cover" :src="p.cover" mode="aspectFill" />
-              <text class="project-card__devices">设备:{{ p.deviceOnline }}/{{ p.deviceTotal }}</text>
+              <image v-if="p.cover" class="project-card__cover" :src="p.cover" mode="aspectFill" />
+              <view v-else class="project-card__empty">
+                <u-icon name="camera" size="28" color="#9aa8a2" />
+              </view>
+              <text class="project-card__ai">AI : {{ p.aiCount }}</text>
+              <text class="project-card__devices">设备：{{ p.online }}/{{ p.total }}</text>
+              <view v-if="p.cameraName" class="project-card__caption">
+                <u-icon name="map" size="12" color="#fff" />
+                <text class="project-card__caption-text">{{ p.cameraName }}</text>
+              </view>
             </view>
             <view class="project-card__name-wrap">
               <text class="project-card__name">{{ p.name }}</text>
@@ -91,35 +140,46 @@
         </view>
       </view>
 
-      <!-- 摄像头宫格视图（设计图 1.3 宫格态） -->
+      <!-- 设备列表，对齐 site-flow-web 按设备视图 -->
       <view v-else class="list-panel">
-        <view class="camera-grid">
-          <view
-            v-for="cam in cameraFeeds"
-            :key="cam.id"
-            class="camera-card"
-            @click="toastProject(cam.cameraName)"
-          >
-            <view class="camera-card__cover-wrap">
-              <image class="camera-card__cover" :src="cam.cover" mode="aspectFill" />
-              <view class="camera-card__spark" @click.stop="openLivePlayer(cam)">
-                <u-icon name="star-fill" size="14" color="#fff" />
+        <view v-if="devicesLoading && devices.length === 0" class="list-empty">设备加载中</view>
+        <view v-else-if="devices.length === 0" class="list-empty">{{ deviceEmptyText }}</view>
+        <view v-else class="device-grid">
+          <view v-for="camera in devices" :key="camera.id" class="device-card" @click="openDevice(camera)">
+            <view class="device-card__preview">
+              <image
+                v-if="cameraCoverUrl(camera)"
+                class="device-card__cover"
+                :src="cameraCoverUrl(camera)"
+                mode="aspectFill"
+              />
+              <view v-else class="device-card__placeholder">
+                <u-icon name="camera" size="28" color="#9aa8a2" />
               </view>
-              <view class="camera-card__bar">
-                <text class="camera-card__cam-name">{{ cam.cameraName }}</text>
-                <u-icon
-                  :name="cam.starred ? 'star-fill' : 'star'"
-                  size="16"
-                  :color="cam.starred ? '#ffb400' : '#fff'"
-                  @click.stop="toggleStar(cam.id)"
-                />
+              <view v-if="camera.status === 1" class="device-card__play">
+                <u-icon name="play-right-fill" size="16" color="#fff" />
+              </view>
+              <view
+                class="device-card__status"
+                :class="camera.status === 1 ? 'device-card__status--on' : 'device-card__status--off'"
+              >
+                <view class="device-card__dot" />
+                <text>{{ camera.status === 1 ? '在线' : '离线' }}</text>
               </view>
             </view>
-            <view class="camera-card__name-wrap">
-              <text class="camera-card__project">{{ cam.projectName }}</text>
+            <view class="device-card__info">
+              <view class="device-card__row">
+                <text class="device-card__name">{{ camera.name }}</text>
+                <text class="device-card__meta">{{ formatDeviceTime(camera.createTime).time }}</text>
+              </view>
+              <view class="device-card__row">
+                <text class="device-card__location">位置：{{ camera.deptName || '未分组' }}</text>
+                <text class="device-card__meta">{{ formatDeviceTime(camera.createTime).date }}</text>
+              </view>
             </view>
           </view>
         </view>
+        <view v-if="devicesLoading && devices.length > 0" class="list-empty">加载中</view>
       </view>
       <view class="scroll-bottom" />
     </scroll-view>
@@ -128,23 +188,54 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { consumeTabTransition } from '@/utils/tab-transition'
+
+const tabEnterClass = consumeTabTransition()
 import V2TopHeader from '@/components/v2/V2TopHeader.vue'
 import V2TabBar from '@/components/nav/V2TabBar.vue'
+import OrgPicker from '@/components/v2/OrgPicker.vue'
 import { useMonitorContext } from '@/composables/useMonitorContext'
 import {
-  v2AiAnalysis,
-  v2AiAnalysisCameraView,
-  v2CameraFeeds,
-  v2Projects,
-  type V2CameraFeed
-} from '@/mock/v2-home'
+  buildProjectCards,
+  cameraCoverUrl,
+  loadVideoDirectory,
+  type VideoDirectory,
+  type VideoProjectCard
+} from '@/composables/org-tree'
+import type { DeptVO } from '@/api/system/dept'
+import { getCameraPage, type CameraVO } from '@/api/video/camera'
+import { v2AiAnalysis, v2AiAnalysisCameraView } from '@/mock/v2-home'
 type VideoViewMode = 'projects' | 'cameras'
 
-const { monitorOrgName } = useMonitorContext()
+const { monitorOrgName, monitorDeptId } = useMonitorContext()
 const orgTitle = monitorOrgName
-const projects = v2Projects
-const cameraFeeds = ref<V2CameraFeed[]>([...v2CameraFeeds])
+const orgPickerVisible = ref(false)
+const directory = ref<VideoDirectory | null>(null)
+const projectsLoading = ref(true)
+const projects = computed(() => {
+  if (!directory.value) return []
+  const cards = buildProjectCards(directory.value, monitorDeptId.value)
+  const text = deviceKeyword.value.trim().toLowerCase()
+  if (!text) return cards
+  const { depts, cameras } = directory.value
+  return cards.filter((card) => matchesProjectKeyword(card, text, depts, cameras))
+})
+const DEVICE_PAGE_SIZE = 12
+const devices = ref<CameraVO[]>([])
+const devicePage = ref(0)
+const deviceTotal = ref(0)
+const devicesLoading = ref(false)
+const deviceKeyword = ref('')
+const deviceStatus = ref<'all' | 0 | 1>('all')
+const searchOpen = ref(false)
+const searchFocused = ref(false)
+const statusMenuOpen = ref(false)
+const deviceStatusOptions = [
+  { label: '全部', value: 'all' as const },
+  { label: '在线', value: 1 as const },
+  { label: '离线', value: 0 as const }
+]
 const viewMode = ref<VideoViewMode>('projects')
 const analysisExpanded = ref(true)
 
@@ -152,16 +243,30 @@ const displayAnalysis = computed(() =>
   viewMode.value === 'cameras' ? v2AiAnalysisCameraView : v2AiAnalysis
 )
 
+const deviceEmptyText = computed(() =>
+  deviceKeyword.value.trim() || deviceStatus.value !== 'all' ? '没有符合条件的设备' : '暂无设备'
+)
+const projectEmptyText = computed(() =>
+  deviceKeyword.value.trim() ? '没有符合条件的项目' : '暂无项目'
+)
 const summaryFullText = computed(() => displayAnalysis.value.summaryLines.join('\n'))
 const summaryDisplayed = ref('')
 const summaryTyping = ref(false)
 let summaryTimer: ReturnType<typeof setTimeout> | null = null
+let keywordTimer: ReturnType<typeof setTimeout> | null = null
 let summaryCharIndex = 0
 
 function clearSummaryTimer(): void {
   if (summaryTimer !== null) {
     clearTimeout(summaryTimer)
     summaryTimer = null
+  }
+}
+
+function clearKeywordTimer(): void {
+  if (keywordTimer !== null) {
+    clearTimeout(keywordTimer)
+    keywordTimer = null
   }
 }
 
@@ -187,24 +292,151 @@ function restartSummaryTypewriter(): void {
 }
 
 watch(summaryFullText, restartSummaryTypewriter, { immediate: true })
-onUnmounted(clearSummaryTimer)
+watch(monitorDeptId, () => {
+  if (viewMode.value === 'cameras') reloadDevices()
+})
+onMounted(() => {
+  void loadVideoDirectory()
+    .then((data) => {
+      directory.value = data
+    })
+    .finally(() => {
+      projectsLoading.value = false
+    })
+})
+
+onUnmounted(() => {
+  clearSummaryTimer()
+  clearKeywordTimer()
+})
 
 function toggleAnalysis(): void {
   analysisExpanded.value = !analysisExpanded.value
 }
 
+function belongsToProject(depts: DeptVO[], deptId: number | undefined, projectId: number): boolean {
+  const byId = new Map(depts.map((dept) => [dept.id, dept]))
+  let current = deptId ? byId.get(deptId) : undefined
+  const seen = new Set<number>()
+  while (current && !seen.has(current.id)) {
+    if (current.deptCategory === 4) return current.id === projectId
+    seen.add(current.id)
+    current = current.parentId ? byId.get(current.parentId) : undefined
+  }
+  return current?.id === projectId
+}
+
+function matchesProjectKeyword(
+  card: VideoProjectCard,
+  text: string,
+  depts: DeptVO[],
+  cameras: CameraVO[]
+): boolean {
+  if (card.name.toLowerCase().includes(text)) return true
+  const dept = depts.find((item) => item.id === card.id)
+  const parentName = dept ? depts.find((item) => item.id === dept.parentId)?.name : ''
+  if (parentName?.toLowerCase().includes(text)) return true
+  return cameras.some((camera) => {
+    if (!belongsToProject(depts, camera.deptId, card.id)) return false
+    return `${camera.name || ''} ${camera.deptName || ''}`.toLowerCase().includes(text)
+  })
+}
+
 function toggleViewMode(): void {
   viewMode.value = viewMode.value === 'projects' ? 'cameras' : 'projects'
+  statusMenuOpen.value = false
+  if (viewMode.value === 'cameras') reloadDevices()
 }
 
-function toggleStar(id: string): void {
-  cameraFeeds.value = cameraFeeds.value.map((c) =>
-    c.id === id ? { ...c, starred: !c.starred } : c
-  )
+function toggleDeviceSearch(): void {
+  searchOpen.value = !searchOpen.value
+  searchFocused.value = searchOpen.value
 }
 
-function goOrgSelect(): void {
-  uni.navigateTo({ url: '/pages/monitor/org-select' })
+function toggleStatusMenu(): void {
+  statusMenuOpen.value = !statusMenuOpen.value
+}
+
+function onKeywordInput(): void {
+  if (viewMode.value !== 'cameras') return
+  clearKeywordTimer()
+  keywordTimer = setTimeout(() => reloadDevices(), 250)
+}
+
+function onKeywordConfirm(): void {
+  if (viewMode.value === 'cameras') reloadDevices()
+}
+
+function changeDeviceStatus(value: 'all' | 0 | 1): void {
+  statusMenuOpen.value = false
+  if (deviceStatus.value === value) return
+  deviceStatus.value = value
+  reloadDevices()
+}
+
+function formatDeviceTime(raw?: string): { time: string; date: string } {
+  if (!raw) return { time: '--:--', date: '--/--/--' }
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) return { time: '--:--', date: '--/--/--' }
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return {
+    time: `${pad(date.getHours())}:${pad(date.getMinutes())}`,
+    date: `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+  }
+}
+
+let deviceLoadId = 0
+
+function reloadDevices(): void {
+  deviceLoadId += 1
+  devicePage.value = 0
+  deviceTotal.value = 0
+  devices.value = []
+  devicesLoading.value = false
+  void loadDevices(deviceLoadId)
+}
+
+async function loadDevices(generation = deviceLoadId): Promise<void> {
+  if (generation !== deviceLoadId || devicesLoading.value) return
+  if (devicePage.value > 0 && devices.value.length >= deviceTotal.value) return
+  devicesLoading.value = true
+  const next = devicePage.value + 1
+  try {
+    const page = await getCameraPage({
+      pageNo: next,
+      pageSize: DEVICE_PAGE_SIZE,
+      deptId: monitorDeptId.value,
+      name: deviceKeyword.value.trim() || undefined,
+      status: deviceStatus.value === 'all' ? undefined : deviceStatus.value
+    })
+    if (generation !== deviceLoadId) return
+    const list = page.list || []
+    devices.value = next === 1 ? list : [...devices.value, ...list]
+    devicePage.value = next
+    deviceTotal.value = Number(page.total || devices.value.length)
+  } catch {
+    if (generation === deviceLoadId && next === 1) devices.value = []
+  } finally {
+    if (generation === deviceLoadId) devicesLoading.value = false
+  }
+}
+
+function onScrollToLower(): void {
+  if (viewMode.value === 'cameras') void loadDevices()
+}
+
+function openDevice(camera: CameraVO): void {
+  if (camera.status !== 1 || !camera.id) {
+    uni.showToast({ title: camera.status === 1 ? '摄像头无效' : '设备离线', icon: 'none' })
+    return
+  }
+  uni.navigateTo({
+    url: `/package-video/live?id=${camera.id}&name=${encodeURIComponent(camera.name || '')}`
+  })
+}
+
+function openOrgPicker(): void {
+  orgPickerVisible.value = true
 }
 
 function goReport(): void {
@@ -215,21 +447,9 @@ function goAiAnalysisDetail(): void {
   uni.navigateTo({ url: '/package-video/ai-analysis' })
 }
 
-function toastSearch(): void {
-  uni.showToast({ title: '搜索', icon: 'none' })
-}
-
-function toastFilter(): void {
-  uni.showToast({ title: '筛选', icon: 'none' })
-}
-
-function toastProject(name: string): void {
-  uni.showToast({ title: name, icon: 'none' })
-}
-
-function openLivePlayer(cam: V2CameraFeed): void {
+function openProject(project: { id: number; name: string }): void {
   uni.navigateTo({
-    url: `/package-video/live?id=${encodeURIComponent(cam.id)}&name=${encodeURIComponent(cam.cameraName)}`
+    url: `/package-video/project?deptId=${project.id}&name=${encodeURIComponent(project.name)}`
   })
 }
 
@@ -239,6 +459,7 @@ function openLivePlayer(cam: V2CameraFeed): void {
 @import '@/static/scss/v2-gradient.scss';
 
 .page {
+  width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -251,7 +472,10 @@ function openLivePlayer(cam: V2CameraFeed): void {
 }
 
 .page__hero {
+  position: relative;
+  z-index: 5;
   flex-shrink: 0;
+  width: 100%;
   padding-bottom: 8rpx;
 }
 
@@ -261,7 +485,46 @@ function openLivePlayer(cam: V2CameraFeed): void {
 
 .header-actions {
   display: flex;
-  gap: 12rpx;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.header-search {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 64rpx;
+  margin-right: 16rpx;
+  padding: 0 20rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.header-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 64rpx;
+  margin-right: 12rpx;
+  font-size: 26rpx;
+  color: #1a1a1a;
+}
+
+.header-actions__icons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header-actions :deep(.v2-header__btn) {
+  margin-right: 0;
+  margin-left: 12rpx;
 }
 
 :deep(.v2-header__btn) {
@@ -272,6 +535,38 @@ function openLivePlayer(cam: V2CameraFeed): void {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+:deep(.v2-header__btn--on) {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.device-filter {
+  position: relative;
+  z-index: 6;
+  margin: 0 24rpx;
+}
+
+.device-filter__menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 7;
+  width: 220rpx;
+  padding: 8rpx 0;
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 8rpx 24rpx rgba(20, 60, 48, 0.12);
+}
+
+.device-filter__option {
+  padding: 18rpx 28rpx;
+  font-size: 28rpx;
+  color: #1a1a1a;
+}
+
+.device-filter__option--on {
+  color: #1a73e8;
 }
 
 .analysis-card {
@@ -408,11 +703,119 @@ function openLivePlayer(cam: V2CameraFeed): void {
   font-weight: 600;
 }
 
-.project-grid,
-.camera-grid {
+.project-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20rpx;
+}
+
+.device-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+}
+
+.device-card {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(35, 160, 120, 0.12);
+}
+
+.device-card__preview {
+  position: relative;
+  height: 200rpx;
+  background: #1d2a44;
+}
+
+.device-card__cover,
+.device-card__placeholder {
+  width: 100%;
+  height: 200rpx;
+  display: block;
+}
+
+.device-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #24324f, #1b2438);
+}
+
+.device-card__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 64rpx;
+  height: 64rpx;
+  margin: -32rpx 0 0 -32rpx;
+  border-radius: 50%;
+  background: rgba(35, 201, 147, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.device-card__status {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  color: #fff;
+
+  &--on {
+    background: rgba(35, 201, 147, 0.92);
+  }
+
+  &--off {
+    background: rgba(232, 84, 84, 0.92);
+  }
+}
+
+.device-card__dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.device-card__info {
+  padding: 12rpx 14rpx 16rpx;
+}
+
+.device-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8rpx;
+}
+
+.device-card__name,
+.device-card__location {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.device-card__name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.device-card__location,
+.device-card__meta {
+  font-size: 20rpx;
+  color: #7d8b86;
 }
 
 .project-card,
@@ -433,18 +836,72 @@ function openLivePlayer(cam: V2CameraFeed): void {
 .project-card__cover,
 .camera-card__cover {
   width: 100%;
-  height: 100%;
+  height: 220rpx;
+  display: block;
 }
 
 .project-card__devices {
   position: absolute;
-  right: 10rpx;
-  bottom: 10rpx;
-  padding: 6rpx 12rpx;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  padding: 8rpx 16rpx;
   font-size: 20rpx;
+  line-height: 28rpx;
   color: #fff;
-  background: rgba(0, 0, 0, 0.52);
-  border-radius: 8rpx;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 0 20rpx 0 12rpx;
+}
+
+.project-card__ai {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  padding: 8rpx 16rpx;
+  font-size: 20rpx;
+  line-height: 28rpx;
+  font-weight: 600;
+  color: #fff;
+  background: #23c993;
+  border-radius: 20rpx 0 12rpx 0;
+}
+
+.project-card__caption {
+  position: absolute;
+  left: 12rpx;
+  right: 12rpx;
+  bottom: 10rpx;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.project-card__caption-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 22rpx;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-card__empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #f3f5f4, #e3e8e6);
+}
+
+.list-empty {
+  padding: 80rpx 0;
+  text-align: center;
+  font-size: 26rpx;
+  color: #7d8b86;
 }
 
 .camera-card__spark {

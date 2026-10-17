@@ -29,7 +29,10 @@ export interface TaskDrawing {
   suffix: 'dwg' | 'pdf' | 'rvt'
   viewToken: string
   viewId: string
+  /** 图纸预览图（PDF/DWG 缩略图），用于任务页内嵌展示 */
   previewUrl?: string
+  /** 原文件地址（本地 static 或远程 URL），PDF 可直接打开 */
+  fileUrl?: string
   floorIds: string[]
 }
 

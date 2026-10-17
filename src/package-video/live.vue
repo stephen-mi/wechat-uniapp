@@ -14,28 +14,13 @@
     </view>
 
     <view class="player-wrap">
-      <live-player
-        v-if="playerKind === 'live' && playUrl"
-        :id="livePlayerId"
+      <ezplayer
+        v-if="accessToken && ezUrl"
+        id="ezplayer"
         class="player__video"
-        :src="playUrl"
-        mode="live"
-        :autoplay="true"
-        :muted="muted"
-        object-fit="contain"
-        @statechange="onLiveStateChange"
-        @error="onLiveError"
-      />
-      <video
-        v-else-if="playerKind === 'video' && playUrl"
-        :id="videoPlayerId"
-        class="player__video"
-        :src="playUrl"
-        :autoplay="true"
-        :muted="muted"
-        :controls="false"
-        object-fit="contain"
-        @error="onVideoError"
+        :accessToken="accessToken"
+        :url="ezUrl"
+        @handleError="onEzplayerError"
       />
       <image v-else class="player__video" :src="coverDisplay" mode="aspectFill" />
 
@@ -68,40 +53,82 @@
           color="#fff"
           @click="toggleMute"
         />
+        <!-- 宫格切换暂不使用
         <u-icon name="grid" size="20" color="#fff" @click="toastCtrl('宫格')" />
-        <u-icon name="scan" size="20" color="#fff" @click="toastCtrl('全屏')" />
+        -->
+        <u-icon name="scan" size="20" color="#fff" @click="toggleFullscreen" />
         <view class="player__quality" @click="reloadStream">刷新</view>
       </view>
     </view>
 
     <view class="ptz-panel">
       <view class="ptz-side ptz-side--left">
-        <view class="ptz-round-btn" @click="ptzAction('zoomIn')">
-          <u-icon name="plus-circle" size="28" color="#fff" />
+        <view
+          class="ptz-round-btn"
+          :class="{ 'ptz-round-btn--active': holding === 'zoomIn' }"
+          @touchstart.stop="ptzStart('zoomIn')"
+          @touchend.stop="ptzStop"
+          @touchcancel.stop="ptzStop"
+        >
+          <u-icon name="plus" size="22" color="#fff" />
         </view>
       </view>
       <view class="ptz-pad">
         <view class="ptz-pad__ring">
-          <view class="ptz-arrow ptz-arrow--up" @click="ptzAction('up')">
-            <u-icon name="arrow-up" size="18" color="#666" />
+          <view
+            class="ptz-arrow ptz-arrow--up"
+            :class="{ 'ptz-arrow--active': holding === 'up' }"
+            @touchstart.stop="ptzStart('up')"
+            @touchend.stop="ptzStop"
+            @touchcancel.stop="ptzStop"
+          >
+            <u-icon name="arrow-up" size="18" :color="holding === 'up' ? '#23c993' : '#666'" />
           </view>
-          <view class="ptz-arrow ptz-arrow--down" @click="ptzAction('down')">
-            <u-icon name="arrow-down" size="18" color="#666" />
+          <view
+            class="ptz-arrow ptz-arrow--down"
+            :class="{ 'ptz-arrow--active': holding === 'down' }"
+            @touchstart.stop="ptzStart('down')"
+            @touchend.stop="ptzStop"
+            @touchcancel.stop="ptzStop"
+          >
+            <u-icon name="arrow-down" size="18" :color="holding === 'down' ? '#23c993' : '#666'" />
           </view>
-          <view class="ptz-arrow ptz-arrow--left" @click="ptzAction('left')">
-            <u-icon name="arrow-left" size="18" color="#666" />
+          <view
+            class="ptz-arrow ptz-arrow--left"
+            :class="{ 'ptz-arrow--active': holding === 'left' }"
+            @touchstart.stop="ptzStart('left')"
+            @touchend.stop="ptzStop"
+            @touchcancel.stop="ptzStop"
+          >
+            <u-icon name="arrow-left" size="18" :color="holding === 'left' ? '#23c993' : '#666'" />
           </view>
-          <view class="ptz-arrow ptz-arrow--right" @click="ptzAction('right')">
-            <u-icon name="arrow-right" size="18" color="#666" />
+          <view
+            class="ptz-arrow ptz-arrow--right"
+            :class="{ 'ptz-arrow--active': holding === 'right' }"
+            @touchstart.stop="ptzStart('right')"
+            @touchend.stop="ptzStop"
+            @touchcancel.stop="ptzStop"
+          >
+            <u-icon name="arrow-right" size="18" :color="holding === 'right' ? '#23c993' : '#666'" />
           </view>
-          <view class="ptz-pad__center" @click="ptzAction('stop')" />
+          <view class="ptz-pad__center" @touchend.stop="ptzStop" />
         </view>
       </view>
       <view class="ptz-side ptz-side--right">
-        <view class="ptz-round-btn" @click="ptzAction('zoomOut')">
-          <u-icon name="minus-circle" size="28" color="#fff" />
+        <view
+          class="ptz-round-btn"
+          :class="{ 'ptz-round-btn--active': holding === 'zoomOut' }"
+          @touchstart.stop="ptzStart('zoomOut')"
+          @touchend.stop="ptzStop"
+          @touchcancel.stop="ptzStop"
+        >
+          <u-icon name="minus" size="22" color="#fff" />
         </view>
-        <view class="ptz-round-btn" @click="ptzAction('playback')">
+        <view
+          class="ptz-round-btn"
+          :class="{ 'ptz-round-btn--active': playbackMode }"
+          @click="togglePlayback"
+        >
           <u-icon name="clock" size="26" color="#fff" />
         </view>
       </view>
@@ -110,21 +137,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, getCurrentInstance, ref } from 'vue'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
-import { ptzControl } from '@/api/video/camera'
+import { ptzControl, getEncodeType, setEncodeType } from '@/api/video/camera'
 import { useNavLayout } from '@/composables/useNavLayout'
 import {
   PTZ_COMMAND_MAP,
-  detectMiniprogramPlayerKind,
-  hasPtzCapability,
+  buildEzplayerLiveUrl,
+  buildEzplayerRecUrl,
   loadEzvizLiveSession,
+  readPtzSupport,
   type EzvizLiveSession
 } from '@/utils/ezviz-live'
 
 const nav = useNavLayout()
-const livePlayerId = 'ezviz-live-player'
-const videoPlayerId = 'ezviz-video-player'
 
 const cameraId = ref('')
 const numericCameraId = ref(0)
@@ -135,12 +161,18 @@ const coverDisplay = ref(defaultCover)
 const streamLoading = ref(false)
 const streamHint = ref('')
 const session = ref<EzvizLiveSession | null>(null)
-const playUrl = ref('')
-const playerKind = ref<'live' | 'video' | 'none'>('none')
+const accessToken = ref('')
+const ezUrl = ref('')
 const muted = ref(true)
 const paused = ref(false)
-const ptzControlLock = ref(false)
-const supportPtz = ref(false)
+const fullscreen = ref(false)
+const playbackMode = ref(false)
+const ptzSupport = ref<'yes' | 'no' | 'unknown'>('unknown')
+const holding = ref('')
+let encodeSwitched = false
+let retryTimer: ReturnType<typeof setTimeout> | null = null
+let ptzRepeat: ReturnType<typeof setInterval> | null = null
+let ptzBusy = false
 
 const overlayTime = computed(() => {
   const d = new Date()
@@ -164,8 +196,51 @@ onLoad((query) => {
 })
 
 onUnload(() => {
-  stopPlayers()
+  clearRetry()
+  ptzStop()
+  ezUrl.value = ''
 })
+
+function clearRetry(): void {
+  if (retryTimer) {
+    clearTimeout(retryTimer)
+    retryTimer = null
+  }
+}
+
+function readEncodeType(raw: unknown): number | null {
+  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+  if (typeof raw === 'string' && raw !== '' && Number.isFinite(Number(raw))) return Number(raw)
+  if (raw && typeof raw === 'object' && 'encodeType' in raw) {
+    return readEncodeType((raw as { encodeType?: unknown }).encodeType)
+  }
+  return null
+}
+
+function isNonH264Error(error: unknown): boolean {
+  const text = typeof error === 'string' ? error : JSON.stringify(error ?? '')
+  return /H\.?264|H\.?265|编码|2101|2102/.test(text)
+}
+
+async function switchEncodeAndWait(id: number): Promise<boolean> {
+  if (!id || encodeSwitched) return false
+  encodeSwitched = true
+  ezUrl.value = ''
+  streamHint.value = '当前编码不是 H.264，正在切换…'
+  try {
+    await setEncodeType(id, 0)
+  } catch (error) {
+    console.error('[ezviz-live] set encode', error)
+    streamHint.value = '切换 H.264 失败，请在设备上改为 H.264 后点刷新'
+    return true
+  }
+  streamHint.value = '已切换为 H.264，设备重启约 40 秒后自动重试'
+  clearRetry()
+  retryTimer = setTimeout(() => {
+    void reloadStream()
+  }, 40000)
+  return true
+}
 
 function parseCameraId(raw: string): number | null {
   const id = Number(raw)
@@ -173,6 +248,7 @@ function parseCameraId(raw: string): number | null {
 }
 
 async function reloadStream(): Promise<void> {
+  clearRetry()
   const id = numericCameraId.value || parseCameraId(cameraId.value)
   if (!id) {
     streamHint.value = '摄像头 ID 无效'
@@ -181,8 +257,8 @@ async function reloadStream(): Promise<void> {
   numericCameraId.value = id
   streamLoading.value = true
   streamHint.value = ''
-  playUrl.value = ''
-  playerKind.value = 'none'
+  accessToken.value = ''
+  ezUrl.value = ''
   session.value = null
 
   try {
@@ -194,34 +270,26 @@ async function reloadStream(): Promise<void> {
     if (loaded.camera.picUrl) {
       coverDisplay.value = loaded.camera.picUrl
     }
-    supportPtz.value = hasPtzCapability(loaded.camera)
+    ptzSupport.value = readPtzSupport(loaded.camera)
+    playbackMode.value = false
 
     if (loaded.camera.status === 0) {
       streamHint.value = '设备离线'
       return
     }
 
-    const kind = detectMiniprogramPlayerKind(loaded.playUrl)
-    playerKind.value = kind
-    playUrl.value = loaded.playUrl
-
-    if (kind === 'none') {
-      streamHint.value =
-        '当前为 Ezopen 协议，小程序需 HLS/RTMP 地址或萤石插件；已拉取 accessToken 与设备信息'
-      console.info('[ezviz-live]', {
-        accessToken: loaded.accessToken,
-        deviceSerial: loaded.deviceSerial,
-        channelNo: loaded.channelNo,
-        rawPlayUrl: loaded.rawPlayUrl
-      })
-    } else {
-      console.info('[ezviz-live]', {
-        accessToken: loaded.accessToken,
-        deviceSerial: loaded.deviceSerial,
-        channelNo: loaded.channelNo,
-        playUrl: loaded.playUrl
-      })
+    if (!loaded.accessToken || !loaded.deviceSerial) {
+      streamHint.value = '未获取到萤石设备信息'
+      return
     }
+
+    accessToken.value = loaded.accessToken
+    ezUrl.value = buildEzplayerLiveUrl(playerSource(loaded))
+    console.info('[ezplayer]', {
+      deviceSerial: loaded.deviceSerial,
+      channelNo: loaded.channelNo,
+      url: ezUrl.value
+    })
   } catch (error) {
     console.error('[ezviz-live] load failed', error)
     streamHint.value = '获取视频流失败'
@@ -230,53 +298,165 @@ async function reloadStream(): Promise<void> {
   }
 }
 
-function stopPlayers(): void {
-  try {
-    uni.createLivePlayerContext(livePlayerId)?.stop?.()
-  } catch {
-    /* ignore */
+interface EzPlayerHandle {
+  fullScreen?: (options?: { direction?: number }) => void
+  cancelFullScreen?: () => void
+  exitFullScreen?: () => void
+  requestFullScreen?: (options?: { direction?: number }) => void
+  openSound?: () => void
+  closeSound?: () => void
+}
+
+const pageProxy = getCurrentInstance()?.proxy as
+  | { $scope?: { selectComponent?: (selector: string) => EzPlayerHandle | null } }
+  | undefined
+
+function getEzplayer(): EzPlayerHandle | null {
+  const fromScope = pageProxy?.$scope?.selectComponent?.('#ezplayer')
+  if (fromScope) return fromScope
+  const pages = getCurrentPages() as Array<{
+    selectComponent?: (selector: string) => EzPlayerHandle | null
+  }>
+  const page = pages[pages.length - 1]
+  return page?.selectComponent?.('#ezplayer') ?? null
+}
+
+function callPlayer(names: string[], arg?: unknown): boolean {
+  const player = getEzplayer() as Record<string, unknown> | null
+  if (!player) return false
+  for (const name of names) {
+    const fn = player[name]
+    if (typeof fn !== 'function') continue
+    try {
+      fn.call(player, arg)
+      return true
+    } catch (error) {
+      console.error('[ezplayer]', name, error)
+    }
   }
-  try {
-    uni.createVideoContext(videoPlayerId)?.stop?.()
-  } catch {
-    /* ignore */
+  return false
+}
+
+function playerSource(loaded: EzvizLiveSession) {
+  return {
+    deviceSerial: loaded.deviceSerial,
+    channelNo: loaded.channelNo,
+    playUrl: loaded.playUrl,
+    rawPlayUrl: loaded.rawPlayUrl
   }
+}
+
+function showLive(): void {
+  const loaded = session.value
+  if (!loaded) return
+  playbackMode.value = false
+  paused.value = false
+  streamHint.value = ''
+  ezUrl.value = buildEzplayerLiveUrl(playerSource(loaded))
 }
 
 function toggleMute(): void {
+  if (!ezUrl.value) {
+    uni.showToast({ title: '请先播放视频', icon: 'none' })
+    return
+  }
   muted.value = !muted.value
+  const opened = muted.value
+    ? callPlayer(['closeSound'])
+    : callPlayer(['openSound'])
+  if (!opened) {
+    muted.value = !muted.value
+    uni.showToast({ title: '播放器声音控制失败', icon: 'none' })
+  }
+}
+
+function toggleFullscreen(): void {
+  if (!ezUrl.value) {
+    uni.showToast({ title: '请先播放视频', icon: 'none' })
+    return
+  }
+  if (fullscreen.value) {
+    const closed = callPlayer(['cancelFullScreen', 'exitFullScreen'])
+    if (closed) fullscreen.value = false
+    return
+  }
+  const opened = callPlayer(['fullScreen', 'requestFullScreen'], { direction: 90 })
+  if (!opened) {
+    uni.showToast({ title: '当前播放器暂不支持全屏', icon: 'none' })
+    return
+  }
+  fullscreen.value = true
 }
 
 function togglePause(): void {
-  paused.value = !paused.value
-  if (playerKind.value === 'live') {
-    const ctx = uni.createLivePlayerContext(livePlayerId)
-    if (paused.value) ctx.pause?.()
-    else ctx.resume?.()
+  if (!session.value || !accessToken.value) {
+    uni.showToast({ title: '请先播放视频', icon: 'none' })
     return
   }
-  if (playerKind.value === 'video') {
-    const ctx = uni.createVideoContext(videoPlayerId)
-    if (paused.value) ctx.pause?.()
-    else ctx.play?.()
+  paused.value = !paused.value
+  if (paused.value) {
+    ezUrl.value = ''
+    return
   }
-}
-
-function onLiveStateChange(e: { detail?: { code?: number } }): void {
-  const code = e.detail?.code
-  if (code === 2004) {
-    paused.value = false
+  if (playbackMode.value) {
+    const recUrl = buildEzplayerRecUrl(playerSource(session.value))
+    streamHint.value = ''
+    ezUrl.value = recUrl
+    return
   }
+  showLive()
 }
 
-function onLiveError(e: unknown): void {
-  console.error('[ezviz-live] live-player error', e)
-  streamHint.value = '直播播放失败'
+function togglePlayback(): void {
+  const loaded = session.value
+  if (!loaded?.deviceSerial || !accessToken.value) {
+    uni.showToast({ title: '请先播放视频', icon: 'none' })
+    return
+  }
+  if (playbackMode.value) {
+    showLive()
+    uni.showToast({ title: '已回到直播', icon: 'none' })
+    return
+  }
+  const recUrl = buildEzplayerRecUrl(playerSource(loaded))
+  if (!recUrl) return
+  playbackMode.value = true
+  paused.value = false
+  streamHint.value = ''
+  ezUrl.value = recUrl
+  uni.showToast({ title: '正在回放今日录像', icon: 'none' })
 }
 
-function onVideoError(e: unknown): void {
-  console.error('[ezviz-live] video error', e)
-  streamHint.value = '视频播放失败'
+async function onPlayerCodecError(error: unknown, fallback: string): Promise<void> {
+  ezUrl.value = ''
+  if (encodeSwitched) {
+    streamHint.value = isNonH264Error(error) ? '设备仍在重启，请稍候再点刷新' : fallback
+    return
+  }
+  if (!isNonH264Error(error)) {
+    try {
+      const encodeType = readEncodeType(await getEncodeType(numericCameraId.value))
+      if (encodeType !== 1) {
+        streamHint.value = fallback
+        return
+      }
+    } catch {
+      streamHint.value = fallback
+      return
+    }
+  }
+  await switchEncodeAndWait(numericCameraId.value)
+}
+
+function onEzplayerError(error: unknown): void {
+  console.error('[ezplayer]', error)
+  const text = typeof error === 'string' ? error : JSON.stringify(error ?? '')
+  if (/no permission/i.test(text)) {
+    ezUrl.value = ''
+    streamHint.value = '开发者工具无法播放该流，请用真机预览'
+    return
+  }
+  void onPlayerCodecError(error, '直播播放失败')
 }
 
 function goBack(): void {
@@ -287,69 +467,49 @@ function toastSwitch(): void {
   uni.showToast({ title: '切换摄像机', icon: 'none' })
 }
 
-function toastCtrl(label: string): void {
-  uni.showToast({ title: label, icon: 'none' })
+function ptzStop(): void {
+  holding.value = ''
+  if (ptzRepeat) {
+    clearInterval(ptzRepeat)
+    ptzRepeat = null
+  }
 }
 
-async function ptzAction(action: string): Promise<void> {
-  if (action === 'playback') {
-    uni.showToast({ title: '录像回放开发中', icon: 'none' })
-    return
-  }
-
-  const id = numericCameraId.value
-  if (!id) {
-    uni.showToast({ title: '无效摄像头', icon: 'none' })
-    return
-  }
-  if (!supportPtz.value) {
-    uni.showToast({ title: '该设备不支持云台', icon: 'none' })
-    return
-  }
-  if (ptzControlLock.value) {
-    uni.showToast({ title: '云台正在转动', icon: 'none' })
-    return
-  }
-
-  if (action === 'stop') {
-    ptzControlLock.value = true
-    try {
-      await ptzControl(id, 0, 1)
-    } catch (error) {
-      console.error('[ezviz-ptz] stop', error)
-    } finally {
-      setTimeout(() => {
-        ptzControlLock.value = false
-      }, 500)
-    }
-    return
-  }
-
+async function sendPtz(action: string): Promise<void> {
   const command = PTZ_COMMAND_MAP[action]
-  if (command === undefined) {
-    uni.showToast({ title: '未知云台指令', icon: 'none' })
-    return
-  }
-
-  ptzControlLock.value = true
+  const id = numericCameraId.value
+  if (command === undefined || !id || ptzBusy || holding.value !== action) return
+  ptzBusy = true
   try {
     await ptzControl(id, command, 4)
-    console.info('[ezviz-ptz]', {
-      cameraId: id,
-      action,
-      accessToken: session.value?.accessToken,
-      deviceSerial: session.value?.deviceSerial,
-      channelNo: session.value?.channelNo
-    })
   } catch (error) {
     console.error('[ezviz-ptz]', error)
     uni.showToast({ title: '云台控制失败', icon: 'none' })
-    ptzControlLock.value = false
+    ptzStop()
+  } finally {
+    ptzBusy = false
+  }
+}
+
+function ptzStart(action: string): void {
+  if (holding.value) return
+  if (!session.value || !accessToken.value) {
+    uni.showToast({ title: '请先播放视频', icon: 'none' })
     return
   }
-  setTimeout(() => {
-    ptzControlLock.value = false
-  }, 1000)
+  if (ptzSupport.value === 'no') {
+    uni.showToast({ title: '该设备不支持云台', icon: 'none' })
+    return
+  }
+  if (PTZ_COMMAND_MAP[action] === undefined) return
+  if (playbackMode.value || paused.value || !ezUrl.value) {
+    showLive()
+  }
+  holding.value = action
+  void sendPtz(action)
+  ptzRepeat = setInterval(() => {
+    if (holding.value === action) void sendPtz(action)
+  }, 900)
 }
 </script>
 
@@ -513,6 +673,10 @@ async function ptzAction(action: string): Promise<void> {
   align-items: center;
   justify-content: center;
   box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.12);
+
+  &--active {
+    background: #23c993;
+  }
 }
 
 .ptz-pad__ring {
@@ -542,6 +706,11 @@ async function ptzAction(action: string): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+
+  &--active {
+    background: rgba(35, 201, 147, 0.16);
+  }
 
   &--up {
     top: 24rpx;

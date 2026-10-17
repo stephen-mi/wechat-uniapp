@@ -40,18 +40,22 @@ export function resolveChannelNo(camera: CameraVO, fallback = 1): number {
 }
 
 export function hasPtzCapability(camera: CameraVO): boolean {
-  if (camera.supportPtz) return true
-  if (!camera.capabilities) return false
+  return readPtzSupport(camera) === 'yes'
+}
+
+/** 能力集未上报时视为未知，仍允许对当前播放设备下发云台 */
+export function readPtzSupport(camera: CameraVO): 'yes' | 'no' | 'unknown' {
+  if (camera.supportPtz === true) return 'yes'
+  if (camera.supportPtz === false) return 'no'
+  if (!camera.capabilities) return 'unknown'
   try {
     const abilities = JSON.parse(camera.capabilities) as { support_ptz?: number | null }
-    return (
-      abilities.support_ptz !== null &&
-      abilities.support_ptz !== undefined &&
-      abilities.support_ptz !== 0
-    )
+    if (abilities.support_ptz === 0) return 'no'
+    if (abilities.support_ptz !== null && abilities.support_ptz !== undefined) return 'yes'
   } catch {
-    return false
+    return 'unknown'
   }
+  return 'unknown'
 }
 
 export type MiniprogramPlayerKind = 'live' | 'video' | 'none'
@@ -133,6 +137,31 @@ export async function loadEzvizLiveSession(cameraId: number): Promise<EzvizLiveS
     rawPlayUrl,
     playUrl
   }
+}
+
+/** ezplayer 内部用 live-player，只接受 RTMP。ezopen 会在真机直接播放失败。 */
+export function buildEzplayerLiveUrl(
+  session: Pick<EzvizLiveSession, 'deviceSerial' | 'channelNo' | 'playUrl' | 'rawPlayUrl'>
+): string {
+  const candidates = [session.playUrl, session.rawPlayUrl]
+  for (const item of candidates) {
+    const url = (item || '').trim()
+    if (url.toLowerCase().startsWith('rtmp://')) return url
+  }
+  if (session.deviceSerial) {
+    const channel = session.channelNo > 0 ? session.channelNo : 1
+    return `rtmp://open.ys7.com/${session.deviceSerial}/${channel}/live`
+  }
+  return ''
+}
+
+/** 同一设备的 RTMP 回放地址 */
+export function buildEzplayerRecUrl(
+  session: Pick<EzvizLiveSession, 'deviceSerial' | 'channelNo'>
+): string {
+  if (!session.deviceSerial) return ''
+  const channel = session.channelNo > 0 ? session.channelNo : 1
+  return `rtmp://open.ys7.com/${session.deviceSerial}/${channel}/playback`
 }
 
 /** Web 端 `ClientCameraCard` / 监控页 PTZ 命令映射 */

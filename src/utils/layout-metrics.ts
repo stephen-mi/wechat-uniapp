@@ -44,9 +44,12 @@ export function getNavLayout(): NavLayout {
 
   try {
     const menu = uni.getMenuButtonBoundingClientRect()
-    if (menu && menu.height > 0) {
-      navBarHeight = (menu.top - statusBarHeight) * 2 + menu.height + NAV_EXTRA_GAP
-      navPaddingRight = Math.max(24, screenWidth - menu.left + 10)
+    if (menu && menu.width > 0 && menu.left > 0 && menu.height > 0 && screenWidth > 0) {
+      const padding = screenWidth - menu.left + 10
+      if (padding > 0 && padding < screenWidth * 0.5) {
+        navBarHeight = (menu.top - statusBarHeight) * 2 + menu.height + NAV_EXTRA_GAP
+        navPaddingRight = Math.max(24, padding)
+      }
     }
   } catch {
     /* 非小程序环境 */

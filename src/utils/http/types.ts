@@ -12,6 +12,8 @@ export interface RequestOptions {
   headers?: RequestHeaders
   baseUrl?: string
   timeout?: number
+  /** 为 true 时 401 不再尝试刷新令牌，避免刷新接口自身循环 */
+  skipAuthRefresh?: boolean
 }
 
 export interface UploadOptions {

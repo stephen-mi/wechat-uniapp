@@ -64,6 +64,10 @@
             "WechatSI" : {
                 "version" : "0.3.6",
                 "provider" : "wx069ba97219f66d99"
+            },
+            "ezplayer" : {
+                "version" : "1.6.2",
+                "provider" : "wxf2b3a0262975d8c2"
             }
         }
     },

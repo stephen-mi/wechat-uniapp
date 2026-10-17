@@ -130,13 +130,28 @@
 			"path": "index",
 			"style": {
 				"navigationBarTitleText": "视频",
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"backgroundColor": "#d7f6ec",
+				"backgroundColorContent": "#d7f6ec"
 			}
 		}, {
+			"path": "project",
+			"style": {
+				"navigationBarTitleText": "摄像头",
+				"navigationStyle": "custom",
+				"backgroundColor": "#d7f6ec",
+				"backgroundColorContent": "#d7f6ec"
+			}
+		}, 		{
 			"path": "live",
 			"style": {
 				"navigationBarTitleText": "视频",
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"mp-weixin": {
+					"usingComponents": {
+						"ezplayer": "plugin://ezplayer/ezplayer"
+					}
+				}
 			}
 		}, {
 			"path": "ai-analysis",
@@ -164,7 +179,9 @@
 			"path": "index",
 			"style": {
 				"navigationBarTitleText": "AI事件",
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"backgroundColor": "#d7f6ec",
+				"backgroundColorContent": "#d7f6ec"
 			}
 		}]
 	}, {
@@ -174,7 +191,9 @@
 			"path": "index",
 			"style": {
 				"navigationBarTitleText": "处置闭环",
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"backgroundColor": "#d7f6ec",
+				"backgroundColorContent": "#d7f6ec"
 			}
 		}]
 	}, {
@@ -184,7 +203,9 @@
 			"path": "index",
 			"style": {
 				"navigationBarTitleText": "任务",
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"backgroundColor": "#d7f6ec",
+				"backgroundColorContent": "#d7f6ec"
 			}
 		}, {
 			"path": "record",
@@ -230,15 +251,27 @@
 				"navigationBarTextStyle": "white"
 			}
 		}]
+	}, {
+		"root": "package-mine",
+		"name": "mine",
+		"pages": [{
+			"path": "index",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationStyle": "custom",
+				"backgroundColor": "#d7f6ec",
+				"backgroundColorContent": "#d7f6ec"
+			}
+		}]
 	}],
 	"preloadRule": {
 		"package-video/index": {
 			"network": "all",
-			"packages": ["ai-event", "disposal", "task"]
+			"packages": ["ai-event", "task", "mine"]
 		},
 		"package-ai-event/index": {
 			"network": "all",
-			"packages": ["video", "disposal", "task"]
+			"packages": ["video", "task", "mine"]
 		},
 		"package-disposal/index": {
 			"network": "all",
@@ -246,12 +279,18 @@
 		},
 		"package-task/index": {
 			"network": "all",
-			"packages": ["video", "ai-event", "disposal"]
+			"packages": ["video", "ai-event", "mine"]
+		},
+		"package-mine/index": {
+			"network": "all",
+			"packages": ["video", "ai-event", "task"]
 		}
 	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "siteflow",
-		"navigationBarBackgroundColor": "#FFFFFF"
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#d7f6ec",
+		"backgroundColorContent": "#d7f6ec"
 	}
 }

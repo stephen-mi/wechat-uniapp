@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :class="tabEnterClass">
     <V2TopHeader :title="headerTitle" :show-back="false" :title-dropdown="true" @title-click="openBuildingPicker">
       <template #right>
         <view class="header-actions">
@@ -38,13 +38,15 @@
     <TaskDrawingStage
       :drawings="drawings"
       :index="drawingIndex"
+      :height="drawingHeight"
+      :folded="contentFolded"
       @prev="stepDrawing(-1)"
       @next="stepDrawing(1)"
-      @open="openDrawing"
+      @toggle="toggleContentFold"
     />
 
-    <view class="toolbar">
-      <scroll-view scroll-x class="floor-scroll" :show-scrollbar="false">
+    <view class="body">
+      <scroll-view scroll-y class="floor-rail" :style="{ height: scrollHeight }" :show-scrollbar="false">
         <view
           v-for="floor in floors"
           :key="floor._id"
@@ -56,9 +58,8 @@
           <view v-if="floor.tag" class="dot" />
         </view>
       </scroll-view>
-    </view>
 
-    <scroll-view scroll-y class="scroll" :style="{ height: scrollHeight }">
+      <scroll-view scroll-y class="scroll" :style="{ height: scrollHeight }">
       <!-- 空间视角：房间 -->
       <view v-if="currentPerspective === '空间'" class="section">
         <view class="section__head">
@@ -99,6 +100,7 @@
         </view>
       </view>
 
+      <view v-show="!contentFolded">
       <!-- 分项 + 关键步骤 -->
       <view v-for="proc in procedures" :key="proc._id" class="proc-card">
         <view class="proc-card__head">
@@ -152,8 +154,10 @@
         </scroll-view>
       </view>
 
-      <view class="scroll-bottom" />
-    </scroll-view>
+        <view class="scroll-bottom" />
+      </view>
+      </scroll-view>
+    </view>
 
     <V2TabBar current="task" />
 
@@ -199,6 +203,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { consumeTabTransition } from '@/utils/tab-transition'
+
+const tabEnterClass = consumeTabTransition()
 import V2TopHeader from '@/components/v2/V2TopHeader.vue'
 import V2TabBar from '@/components/nav/V2TabBar.vue'
 import TaskDrawingStage from './drawing-stage.vue'
@@ -213,7 +220,6 @@ import {
   getProfessionalProjects,
   getRooms,
   getTaskRecordUnreadCount,
-  getViewToken,
   markTaskStatus,
   savePercentageOfTask,
   updateQuantity,
@@ -231,7 +237,6 @@ import type {
   TaskStage,
   TaskStructuredPhoto
 } from '@/api/task/types'
-import { buildBimfaceViewerSrc } from '@/utils/bimface'
 import { getLayoutMetrics, getNavLayout } from '@/utils/layout-metrics'
 import { mockTaskOrgId } from '@/mock/task'
 
@@ -266,6 +271,12 @@ const roomExpanded = ref(false)
 const showBuildingPicker = ref(false)
 const showModuleMenu = ref(false)
 const scrollHeight = ref('500px')
+const drawingHeight = ref(0)
+const contentFolded = ref(false)
+const restDrawingHeight = ref(0)
+const restScrollHeight = ref(0)
+const chipStripHeight = ref(0)
+const expandedDrawingHeight = ref(0)
 
 const headerTitle = computed(() => currentBuilding.value?.name || '任务现场')
 
@@ -336,34 +347,6 @@ function stepDrawing(delta: number): void {
   const next = drawingIndex.value + delta
   if (next < 0 || next >= drawings.value.length) return
   drawingIndex.value = next
-}
-
-async function openDrawing(): Promise<void> {
-  const drawing = drawings.value[drawingIndex.value]
-  if (!drawing) {
-    uni.showToast({ title: '当前楼层暂无图纸', icon: 'none' })
-    return
-  }
-  let token = drawing.viewToken
-  let previewUrl = drawing.previewUrl || ''
-  let modelId = drawing.viewId || '0'
-  if (!token) {
-    const tokens = await getViewToken(drawing._id)
-    token = tokens[0]?.viewToken || ''
-    previewUrl = tokens[0]?.previewUrl || previewUrl
-    modelId = tokens[0]?.viewId || modelId
-  }
-  const src = buildBimfaceViewerSrc({
-    viewToken: token,
-    name: drawing.name,
-    modelId,
-    suffix: drawing.suffix,
-    previewUrl,
-    context: contextLabel.value
-  })
-  uni.navigateTo({
-    url: `/package-task/drawing?title=${encodeURIComponent(drawing.name)}&src=${encodeURIComponent(src)}`
-  })
 }
 
 async function loadRoomsAndProcedures(): Promise<void> {
@@ -535,11 +518,33 @@ watch(
   }
 )
 
+function applyFoldLayout(): void {
+  if (contentFolded.value) {
+    drawingHeight.value = expandedDrawingHeight.value
+    scrollHeight.value = `${chipStripHeight.value}px`
+    return
+  }
+  drawingHeight.value = restDrawingHeight.value
+  scrollHeight.value = `${restScrollHeight.value}px`
+}
+
+function toggleContentFold(): void {
+  contentFolded.value = !contentFolded.value
+  applyFoldLayout()
+}
+
 onMounted(() => {
   const { windowHeight, safeAreaBottom } = getLayoutMetrics()
-  const top = getNavLayout().navTotalHeight + 88 + 150
+  const stage = Math.round(windowHeight * 0.4)
   const bottom = 55 + safeAreaBottom
-  scrollHeight.value = `${windowHeight - top - bottom}px`
+  const headerBlock = getNavLayout().navTotalHeight + 48
+  // 收起后仍露出楼层和专业分项，避免分项标签被图纸挡住
+  const strip = 176
+  restDrawingHeight.value = stage
+  restScrollHeight.value = Math.max(windowHeight - headerBlock - stage - bottom, 0)
+  chipStripHeight.value = strip
+  expandedDrawingHeight.value = Math.max(windowHeight - headerBlock - bottom - strip - 8, stage)
+  applyFoldLayout()
   void bootstrap()
 })
 </script>
@@ -623,23 +628,28 @@ onMounted(() => {
   }
 }
 
-.toolbar {
-  padding: 12rpx 24rpx 0;
+.body {
+  display: flex;
+  align-items: flex-start;
+  padding: 12rpx 0 0 16rpx;
+  box-sizing: border-box;
 }
 
-.floor-scroll {
-  white-space: nowrap;
+.floor-rail {
+  width: 112rpx;
+  flex-shrink: 0;
 }
 
 .floor-chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8rpx;
-  margin-right: 16rpx;
-  padding: 12rpx 28rpx;
+  justify-content: center;
+  gap: 6rpx;
+  margin-bottom: 16rpx;
+  padding: 14rpx 8rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.7);
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #555;
 
   &--on {
@@ -657,7 +667,9 @@ onMounted(() => {
 }
 
 .scroll {
-  padding: 16rpx 24rpx;
+  flex: 1;
+  width: 0;
+  padding: 0 24rpx 0 12rpx;
   box-sizing: border-box;
 }
 

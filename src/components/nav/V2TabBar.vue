@@ -5,7 +5,7 @@
         v-for="item in visibleTabs"
         :key="item.key"
         class="tabbar__item"
-        @click="switchTo(item.path)"
+        @click="switchTo(item)"
       >
         <view class="tabbar__icon-wrap" :class="{ 'tabbar__icon-wrap--active': current === item.key }">
           <u-icon :name="item.icon" :size="22" :color="current === item.key ? '#fff' : '#999'" />
@@ -19,12 +19,21 @@
   </view>
 </template>
 
+<script lang="ts">
+export default {
+  options: {
+    virtualHost: true
+  }
+}
+</script>
+
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { getLayoutMetrics } from '@/utils/layout-metrics'
+import { markTabTransition, type TabKey } from '@/utils/tab-transition'
 
-defineProps<{
-  current: 'video' | 'ai-event' | 'disposal' | 'task'
+const props = defineProps<{
+  current: TabKey
 }>()
 
 const safeBottom = ref(0)
@@ -46,6 +55,13 @@ const tabs = [
     hidden: false
   },
   {
+    key: 'mine' as const,
+    text: '我的',
+    path: '/package-mine/index',
+    icon: 'account',
+    hidden: false
+  },
+  {
     key: 'ai-event' as const,
     text: '处置闭环',
     path: '/package-disposal/index',
@@ -56,8 +72,18 @@ const tabs = [
 
 const visibleTabs = tabs.filter((item) => !item.hidden)
 
-function switchTo(path: string): void {
-  uni.reLaunch({ url: path })
+const switching = ref(false)
+
+function switchTo(item: (typeof tabs)[number]): void {
+  if (switching.value || item.key === props.current) return
+  switching.value = true
+  markTabTransition(props.current, item.key)
+  uni.reLaunch({
+    url: item.path,
+    complete: () => {
+      switching.value = false
+    }
+  })
 }
 
 onMounted(() => {
@@ -71,13 +97,20 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
+  display: block;
+  width: 100%;
   z-index: 99;
+  box-sizing: border-box;
   background: #fff;
   border-top: 1rpx solid #eee;
 }
 
 .tabbar__row {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
   height: 100rpx;
 }
 

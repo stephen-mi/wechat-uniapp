@@ -85,6 +85,27 @@ export function ptzControl(cameraId: number, command: number, action: number) {
   )
 }
 
+/** 0 = H.264，1 = H.265。小程序 live-player 只接受 H.264 */
+export function getEncodeType(id: number) {
+  return unwrap<number | { encodeType?: number }>(
+    request({
+      url: '/video/camera/get-encode-type',
+      method: 'GET',
+      params: { id }
+    })
+  )
+}
+
+export function setEncodeType(cameraId: number, encodeType: number) {
+  return unwrap<unknown>(
+    request({
+      url: '/video/camera/set-encode-type',
+      method: 'POST',
+      data: { cameraId, encodeType }
+    })
+  )
+}
+
 /** ezopen 无法直放时，尝试后端转换的小程序可播地址 */
 export function getEziotLiveUrl(deviceSerial: string, channelNo: number) {
   return unwrap<string>(
@@ -92,6 +113,28 @@ export function getEziotLiveUrl(deviceSerial: string, channelNo: number) {
       url: '/video/eziot/live-url',
       method: 'GET',
       params: { deviceSerial, channelNo }
+    })
+  )
+}
+
+export interface CameraPageResult {
+  list: CameraVO[]
+  total: number
+}
+
+/** 对齐 site-flow-web `getCameraPage`，组织树在线数按部门汇总 */
+export function getCameraPage(params: {
+  pageNo: number
+  pageSize: number
+  deptId?: number
+  status?: number
+  name?: string
+}) {
+  return unwrap<CameraPageResult>(
+    request({
+      url: '/video/camera/page',
+      method: 'GET',
+      params
     })
   )
 }

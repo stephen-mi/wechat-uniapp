@@ -37,7 +37,14 @@ export const mockBuildings: TaskBuilding[] = [
 ]
 
 export const mockFloors: TaskFloor[] = [
-  { _id: 'f3', name: '3F', orderNo: 3, type: 'upper', tag: true, drawingIds: ['d-f3', 'd-f3s'] },
+  {
+    _id: 'f3',
+    name: '3F',
+    orderNo: 3,
+    type: 'upper',
+    tag: true,
+    drawingIds: ['d-f3-pdf', 'd-f3', 'd-f3s']
+  },
   { _id: 'f2', name: '2F', orderNo: 2, type: 'upper', tag: false, drawingIds: ['d-f2'] },
   { _id: 'f1', name: '1F', orderNo: 1, type: 'upper', tag: false, drawingIds: ['d-f1'] },
   { _id: 'fb1', name: 'B1', orderNo: -1, type: 'lower', tag: false, drawingIds: ['d-fb1'] }
@@ -46,6 +53,16 @@ export const mockFloors: TaskFloor[] = [
 const demoToken = config.bimfaceDemoViewToken
 
 export const mockDrawings: TaskDrawing[] = [
+  {
+    _id: 'd-f3-pdf',
+    name: '3-LM-01',
+    suffix: 'pdf',
+    viewToken: '',
+    viewId: '0',
+    previewUrl: '/static/drawings/3-LM-01.png',
+    fileUrl: '/static/drawings/3-LM-01.pdf',
+    floorIds: ['f3']
+  },
   {
     _id: 'd-f3',
     name: '3F 建筑平面图',

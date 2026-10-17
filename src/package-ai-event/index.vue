@@ -1,6 +1,6 @@
 <template>
-  <view class="page">
-    <V2TopHeader :title="orgTitle" @title-click="goOrgSelect">
+  <view class="page" :class="tabEnterClass">
+    <V2TopHeader :title="orgTitle" @title-click="openOrgPicker" @chevron-click="openOrgPicker">
       <template #sub>
         <view class="sub-row">
           <text class="sub-range">最近7天</text>
@@ -11,6 +11,8 @@
         </view>
       </template>
     </V2TopHeader>
+
+    <OrgPicker v-model:show="orgPickerVisible" />
 
     <scroll-view scroll-y class="scroll" :style="{ height: scrollHeight }">
       <view v-for="p in projects" :key="p.id" class="rate-card" @click="toastProject(p.name)">
@@ -45,19 +47,24 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { consumeTabTransition } from '@/utils/tab-transition'
+
+const tabEnterClass = consumeTabTransition()
 import V2TopHeader from '@/components/v2/V2TopHeader.vue'
 import V2TabBar from '@/components/nav/V2TabBar.vue'
+import OrgPicker from '@/components/v2/OrgPicker.vue'
 import { useMonitorContext } from '@/composables/useMonitorContext'
 import { v2DisposalProjects } from '@/mock/v2-home'
 import { getLayoutMetrics, getNavLayout } from '@/utils/layout-metrics'
 
 const { monitorOrgName } = useMonitorContext()
 const orgTitle = monitorOrgName
+const orgPickerVisible = ref(false)
 const projects = v2DisposalProjects
 const scrollHeight = ref('600px')
 
-function goOrgSelect(): void {
-  uni.navigateTo({ url: '/pages/monitor/org-select' })
+function openOrgPicker(): void {
+  orgPickerVisible.value = true
 }
 
 function goMap(): void {

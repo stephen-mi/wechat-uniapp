@@ -57,6 +57,8 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, onMounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
+import { getAccessToken } from '@/utils/auth'
 import { goHomeAfterLogin, useUiVersion } from '@/composables/useUiVersion'
 import type { PreLoginRespVO } from '@/types/api'
 import type { LoginFormPayload } from '@/store/types'
@@ -158,6 +160,12 @@ function onVersionSwitch(val: boolean): void {
 
 onMounted(() => {
   useNewVersion.value = isV2.value
+})
+
+onShow(() => {
+  if (getAccessToken()) {
+    goHomeAfterLogin()
+  }
 })
 
 async function loginSuccess(): Promise<void> {

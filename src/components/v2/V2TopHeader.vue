@@ -29,6 +29,14 @@
   </view>
 </template>
 
+<script lang="ts">
+export default {
+  options: {
+    virtualHost: true
+  }
+}
+</script>
+
 <script setup lang="ts">
 import { useNavLayout } from '@/composables/useNavLayout'
 
@@ -62,23 +70,29 @@ function onBack(): void {
 @import '@/static/scss/v2-gradient.scss';
 
 .v2-header {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   background: $v2-header-gradient;
   color: #1a1a1a;
 }
 
 .v2-header__bar {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   box-sizing: border-box;
   padding: 0 0 0 24rpx;
-  align-items: center;
 }
 
 .v2-header__left {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 12rpx;
   flex: 1;
   min-width: 0;
 }
@@ -86,6 +100,7 @@ function onBack(): void {
 .v2-header__btn {
   width: 64rpx;
   height: 64rpx;
+  margin-right: 12rpx;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.18);
   display: flex;
@@ -96,9 +111,11 @@ function onBack(): void {
 
 .v2-header__title-area {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 8rpx;
   min-width: 0;
+  flex: 1;
 }
 
 .v2-header__title {
@@ -111,14 +128,15 @@ function onBack(): void {
 }
 
 .v2-header__chevron {
-  padding: 12rpx 16rpx 12rpx 20rpx;
-  margin-left: -8rpx;
+  padding: 12rpx 16rpx 12rpx 8rpx;
+  flex-shrink: 0;
 }
 
 .v2-header__right {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 16rpx;
   flex-shrink: 0;
 }
 
